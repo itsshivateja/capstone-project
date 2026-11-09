@@ -24,7 +24,7 @@ class MessageResponse(BaseModel):
 
 class ConversationCreate(BaseModel):
     title: Optional[str] = "New Conversation"
-    project_id: str
+    project_id: Optional[str] = None
 
 class ConversationResponse(BaseModel):
     id: str

@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { name: 'Projects', path: '/projects', icon: FolderKanban },
   { name: 'Repo Explorer', path: '/explorer', icon: FolderTree },
   { name: 'AI Code Chat', path: '/chat', icon: MessageSquareCode },
+  { name: 'AI Agents Hub', path: '/agents', icon: Bot },
   { name: 'Bug Detection', path: '/bugs', icon: ShieldAlert },
   { name: 'Code Generation', path: '/codegen', icon: Sparkles },
   { name: 'Code Review', path: '/review', icon: FileCheck2 },

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useProject } from '../context/ProjectContext';
 import { projectService } from '../services/projects';
-import { aiService } from '../services/ai';
+import { aiService, TestRunResult } from '../services/ai';
 import { TestSuite, TreeNode } from '../types';
 import { MonacoEditorWrapper } from '../components/common/MonacoEditorWrapper';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -13,7 +13,9 @@ import {
   Layers,
   CheckCircle,
   AlertCircle,
-  HelpCircle,
+  Terminal,
+  Clock,
+  XCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,8 +25,10 @@ export const TestGeneration: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<string>('');
   const [framework, setFramework] = useState<string>('pytest');
   const [generating, setGenerating] = useState(false);
+  const [runningTests, setRunningTests] = useState(false);
   const [testSuite, setTestSuite] = useState<TestSuite | null>(null);
   const [pastSuites, setPastSuites] = useState<TestSuite[]>([]);
+  const [testRunResult, setTestRunResult] = useState<TestRunResult | null>(null);
   const navigate = useNavigate();
 
   // Load files for dropdown
@@ -58,6 +62,7 @@ export const TestGeneration: React.FC = () => {
     e.preventDefault();
     if (!activeProject || !selectedFile || generating) return;
     setGenerating(true);
+    setTestRunResult(null);
     try {
       const generated = await aiService.generateTests(activeProject.id, selectedFile, framework);
       setTestSuite(generated);
@@ -66,6 +71,26 @@ export const TestGeneration: React.FC = () => {
       console.error('Failed to generate tests', err);
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleRunTests = async () => {
+    if (!activeProject || !testSuite || runningTests) return;
+    setRunningTests(true);
+    try {
+      const res = await aiService.runTestSuite(activeProject.id, testSuite.id, testSuite.test_code);
+      setTestRunResult(res);
+    } catch (err: any) {
+      console.error('Failed to run test suite', err);
+      setTestRunResult({
+        status: 'failed',
+        total_passed: 0,
+        total_failed: 1,
+        duration_ms: 0,
+        output_log: err?.response?.data?.detail || err.message || 'Error occurred while executing tests.',
+      });
+    } finally {
+      setRunningTests(false);
     }
   };
 
@@ -157,37 +182,85 @@ export const TestGeneration: React.FC = () => {
           </div>
 
           {testSuite && (
-            <button
-              onClick={handleDownload}
-              className="px-3 py-1 rounded bg-dark-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs transition flex items-center gap-1.5"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download Test File</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRunTests}
+                disabled={runningTests}
+                className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium transition flex items-center gap-1.5 shadow-sm"
+              >
+                {runningTests ? <LoadingSpinner size="sm" /> : <Play className="w-3.5 h-3.5" />}
+                <span>{runningTests ? 'Running in Sandbox...' : 'Run in Sandbox'}</span>
+              </button>
+
+              <button
+                onClick={handleDownload}
+                className="px-3 py-1 rounded bg-dark-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs transition flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Test File</span>
+              </button>
+            </div>
           )}
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Main Monaco Editor */}
-          <div className="flex-1 overflow-hidden relative">
-            {generating ? (
-              <div className="h-full flex flex-col items-center justify-center">
-                <LoadingSpinner size="lg" label="Generating parameterized test cases & edge scenarios..." />
-              </div>
-            ) : testSuite ? (
-              <MonacoEditorWrapper
-                value={testSuite.test_code}
-                language={framework === 'pytest' || framework === 'unittest' ? 'python' : 'typescript'}
-                readOnly={true}
-              />
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 text-xs">
-                <TestTubes className="w-10 h-10 text-slate-700 mb-2" />
-                <p className="font-medium text-slate-300">Ready to Generate Unit Tests</p>
-                <p className="text-slate-500 mt-1 max-w-sm">
-                  Select a target module and let DevMind AI generate complete pytest cases with edge bounds, negative checks, and mocking fixtures.
-                </p>
+          <div className="flex-1 flex flex-col overflow-hidden relative">
+            <div className="flex-1 overflow-hidden">
+              {generating ? (
+                <div className="h-full flex flex-col items-center justify-center">
+                  <LoadingSpinner size="lg" label="Generating parameterized test cases & edge scenarios..." />
+                </div>
+              ) : testSuite ? (
+                <MonacoEditorWrapper
+                  value={testSuite.test_code}
+                  language={framework === 'pytest' || framework === 'unittest' ? 'python' : 'typescript'}
+                  readOnly={true}
+                />
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 text-xs">
+                  <TestTubes className="w-10 h-10 text-slate-700 mb-2" />
+                  <p className="font-medium text-slate-300">Ready to Generate Unit Tests</p>
+                  <p className="text-slate-500 mt-1 max-w-sm">
+                    Select a target module and let DevMind AI generate complete pytest cases with edge bounds, negative checks, and mocking fixtures.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Test Run Execution Log Terminal */}
+            {testRunResult && (
+              <div className="h-44 border-t border-slate-800 bg-dark-950 flex flex-col">
+                <div className="px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs bg-dark-900/80">
+                  <div className="flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-brand-400" />
+                    <span className="font-semibold text-slate-200">Sandbox Test Runner Output</span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
+                        testRunResult.status === 'passed'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-red-500/10 text-red-400 border border-red-500/30'
+                      }`}
+                    >
+                      {testRunResult.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                    <span className="flex items-center gap-1 text-emerald-400 font-mono">
+                      <CheckCircle className="w-3 h-3" /> {testRunResult.total_passed} Passed
+                    </span>
+                    <span className="flex items-center gap-1 text-red-400 font-mono">
+                      <XCircle className="w-3 h-3" /> {testRunResult.total_failed} Failed
+                    </span>
+                    <span className="flex items-center gap-1 text-slate-400 font-mono">
+                      <Clock className="w-3 h-3" /> {testRunResult.duration_ms}ms
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-1 p-3 overflow-y-auto font-mono text-[11px] text-slate-300 whitespace-pre-wrap selection:bg-slate-700">
+                  {testRunResult.output_log}
+                </div>
               </div>
             )}
           </div>

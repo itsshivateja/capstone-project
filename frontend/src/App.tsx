@@ -9,6 +9,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Projects } from './pages/Projects';
 import { RepoExplorer } from './pages/RepoExplorer';
 import { AIChat } from './pages/AIChat';
+import { AIAgents } from './pages/AIAgents';
 import { BugDetection } from './pages/BugDetection';
 import { CodeGeneration } from './pages/CodeGeneration';
 import { CodeReview } from './pages/CodeReview';
@@ -91,6 +92,7 @@ export const App: React.FC = () => {
               <Route path="projects" element={<Projects />} />
               <Route path="explorer" element={<RepoExplorer />} />
               <Route path="chat" element={<AIChat />} />
+              <Route path="agents" element={<AIAgents />} />
               <Route path="bugs" element={<BugDetection />} />
               <Route path="codegen" element={<CodeGeneration />} />
               <Route path="review" element={<CodeReview />} />

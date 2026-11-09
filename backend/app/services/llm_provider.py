@@ -27,20 +27,13 @@ class LLMProvider:
         """
         self._refresh_keys()
 
-        # Try Gemini API if key is present
-        gemini = custom_key if (custom_key and custom_key.startswith("AIzaSy")) else self.gemini_key
-        if gemini:
-            try:
-                return await self._call_gemini(gemini, system_prompt, user_prompt, temperature)
-            except Exception as e:
-                print(f"[LLM] Gemini call failed ({e}). Proceeding to fallback engine.")
-
-        # Try Groq API if key is present (High-Speed LLaMA-3.3 LPU)
-        if self.groq_key:
-            for model_candidate in ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "llama-3.1-8b-instant", "llama3-70b-8192"]:
+        # Try Groq API if key is present (High-Speed LPU: GPT-OSS-120B / Qwen-27B / LLaMA)
+        groq = custom_key if (custom_key and custom_key.startswith("gsk_")) else self.groq_key
+        if groq:
+            for model_candidate in ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
                 try:
                     return await self._call_openai_compatible(
-                        api_key=self.groq_key,
+                        api_key=groq,
                         base_url="https://api.groq.com/openai/v1",
                         model=model_candidate,
                         system_prompt=system_prompt,
@@ -49,6 +42,14 @@ class LLMProvider:
                     )
                 except Exception as e:
                     print(f"[LLM] Groq call with {model_candidate} failed: {e}")
+
+        # Try Gemini API if key is present
+        gemini = custom_key if (custom_key and custom_key.startswith("AIzaSy")) else self.gemini_key
+        if gemini:
+            try:
+                return await self._call_gemini(gemini, system_prompt, user_prompt, temperature)
+            except Exception as e:
+                print(f"[LLM] Gemini call failed ({e}). Proceeding to fallback engine.")
 
         # Try OpenAI API if key is present
         openai = custom_key if (custom_key and custom_key.startswith("sk-")) else self.openai_key
@@ -110,7 +111,9 @@ class LLMProvider:
             resp = await client.post(url, headers=headers, json=payload)
             resp.raise_for_status()
             data = resp.json()
-            return data["choices"][0]["message"]["content"]
+            choice = data["choices"][0]
+            msg = choice.get("message", {})
+            return msg.get("content") or msg.get("reasoning") or "No response received."
 
     def _generate_intelligent_fallback(self, system_prompt: str, user_prompt: str) -> str:
         """

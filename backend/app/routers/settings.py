@@ -94,3 +94,4 @@ async def update_api_keys(
         "message": test_message or "API configuration updated successfully.",
         "active_provider": "groq" if settings.GROQ_API_KEY else "autonomous_local"
     }
+
