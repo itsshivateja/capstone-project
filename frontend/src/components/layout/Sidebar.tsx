@@ -16,22 +16,28 @@ import {
   User as UserIcon,
   Bot,
   Code2,
+  Lock,
+  History,
+  Wrench,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProject } from '../../context/ProjectContext';
 
 const NAV_ITEMS = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Code Sandbox (Paste)', path: '/sandbox', icon: Code2 },
-  { name: 'Projects (Upload)', path: '/projects', icon: FolderKanban },
-  { name: 'Repo Explorer', path: '/explorer', icon: FolderTree },
+  { name: 'My Projects', path: '/projects', icon: FolderKanban },
+  { name: 'Code Editor', path: '/sandbox', icon: Code2 },
   { name: 'AI Code Chat', path: '/chat', icon: MessageSquareCode },
-  { name: 'AI Agents Hub', path: '/agents', icon: Bot },
+  { name: 'Project Analysis', path: '/explorer', icon: FolderTree },
   { name: 'Bug Detection', path: '/bugs', icon: ShieldAlert },
   { name: 'Code Generation', path: '/codegen', icon: Sparkles },
   { name: 'Code Review', path: '/review', icon: FileCheck2 },
+  { name: 'Code Refactoring', path: '/refactor', icon: Wrench },
   { name: 'Test Generation', path: '/tests', icon: TestTubes },
+  { name: 'Security Analysis', path: '/security', icon: Lock },
   { name: 'Documentation', path: '/docs', icon: FileText },
+  { name: 'AI Agents', path: '/agents', icon: Bot },
+  { name: 'Activity History', path: '/history', icon: History },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 
@@ -90,8 +96,8 @@ export const Sidebar: React.FC = () => {
         )}
       </div>
 
-      {/* Navigation List */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      {/* Navigation List - All 15 Pages */}
+      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           return (
@@ -99,15 +105,15 @@ export const Sidebar: React.FC = () => {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition group ${
+                `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition group ${
                   isActive
                     ? 'bg-brand-500/15 text-brand-400 font-semibold border border-brand-500/30'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                 }`
               }
             >
-              <Icon className="w-4 h-4 transition group-hover:scale-105" />
-              <span>{item.name}</span>
+              <Icon className="w-4 h-4 transition group-hover:scale-105 shrink-0" />
+              <span className="truncate">{item.name}</span>
             </NavLink>
           );
         })}
@@ -137,4 +143,3 @@ export const Sidebar: React.FC = () => {
     </aside>
   );
 };
-

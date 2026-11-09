@@ -108,3 +108,60 @@ def get_dashboard_stats(
         ]
     }
 
+@router.get("/history")
+def get_full_activity_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> List[Dict[str, Any]]:
+    projects = db.query(Project).filter(Project.user_id == current_user.id).all()
+    project_ids = [p.id for p in projects]
+    project_names = {p.id: p.name for p in projects}
+
+    history: List[Dict[str, Any]] = []
+
+    # 1. Project Ingestions
+    for p in projects:
+        history.append({
+            "id": f"proj_{p.id}",
+            "action": "Repository Ingestion",
+            "category": "Project",
+            "title": f"Ingested {p.name} ({p.total_files} files, {p.total_lines} lines)",
+            "project_name": p.name,
+            "project_id": p.id,
+            "status": "completed",
+            "timestamp": p.created_at
+        })
+
+    # 2. Bug Reports
+    if project_ids:
+        bugs = db.query(BugReport).filter(BugReport.project_id.in_(project_ids)).order_by(BugReport.created_at.desc()).limit(20).all()
+        for b in bugs:
+            history.append({
+                "id": f"bug_{b.id}",
+                "action": "Vulnerability Scan",
+                "category": "Security / Quality",
+                "title": f"[{b.severity}] {b.category}: {b.file_path}",
+                "project_name": project_names.get(b.project_id, "Repository"),
+                "project_id": b.project_id,
+                "status": b.severity.lower(),
+                "timestamp": b.created_at
+            })
+
+        # 3. Conversations
+        convs = db.query(Conversation).filter(Conversation.project_id.in_(project_ids)).order_by(Conversation.updated_at.desc()).limit(15).all()
+        for c in convs:
+            history.append({
+                "id": f"conv_{c.id}",
+                "action": "RAG Chat Session",
+                "category": "AI Chat",
+                "title": f"Consultation: {c.title}",
+                "project_name": project_names.get(c.project_id, "Repository"),
+                "project_id": c.project_id,
+                "status": "completed",
+                "timestamp": c.updated_at
+            })
+
+    history.sort(key=lambda x: x["timestamp"], reverse=True)
+    return history
+
+

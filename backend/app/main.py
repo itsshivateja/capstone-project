@@ -22,7 +22,9 @@ from app.routers import (
     dashboard,
     agents,
     settings as app_settings,
-    snippet
+    snippet,
+    refactor,
+    security
 )
 
 @asynccontextmanager
@@ -61,6 +63,8 @@ app.include_router(dashboard.router, prefix=settings.API_V1_PREFIX)
 app.include_router(agents.router, prefix=settings.API_V1_PREFIX)
 app.include_router(app_settings.router, prefix=settings.API_V1_PREFIX)
 app.include_router(snippet.router, prefix=settings.API_V1_PREFIX)
+app.include_router(refactor.router, prefix=settings.API_V1_PREFIX)
+app.include_router(security.router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/")
 def root():

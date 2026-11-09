@@ -17,6 +17,9 @@ import { TestGeneration } from './pages/TestGeneration';
 import { Documentation } from './pages/Documentation';
 import { Settings } from './pages/Settings';
 import { CodeSandbox } from './pages/CodeSandbox';
+import { CodeRefactoring } from './pages/CodeRefactoring';
+import { SecurityAnalysis } from './pages/SecurityAnalysis';
+import { ActivityHistory } from './pages/ActivityHistory';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -90,16 +93,19 @@ export const App: React.FC = () => {
             >
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="sandbox" element={<CodeSandbox />} />
               <Route path="projects" element={<Projects />} />
-              <Route path="explorer" element={<RepoExplorer />} />
+              <Route path="sandbox" element={<CodeSandbox />} />
               <Route path="chat" element={<AIChat />} />
-              <Route path="agents" element={<AIAgents />} />
+              <Route path="explorer" element={<RepoExplorer />} />
               <Route path="bugs" element={<BugDetection />} />
               <Route path="codegen" element={<CodeGeneration />} />
               <Route path="review" element={<CodeReview />} />
+              <Route path="refactor" element={<CodeRefactoring />} />
               <Route path="tests" element={<TestGeneration />} />
+              <Route path="security" element={<SecurityAnalysis />} />
               <Route path="docs" element={<Documentation />} />
+              <Route path="agents" element={<AIAgents />} />
+              <Route path="history" element={<ActivityHistory />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 

@@ -281,3 +281,4 @@ class SnippetService:
         return SnippetAnalysisResponse(action="generate_code", language=language, text_result=resp)
 
 snippet_service = SnippetService()
+

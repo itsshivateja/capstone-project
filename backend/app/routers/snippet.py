@@ -68,3 +68,4 @@ def detect_code_language(payload: LanguageDetectRequest):
         return LanguageDetectResponse(language="html", confidence=0.95)
     
     return LanguageDetectResponse(language="python", confidence=0.50)
+

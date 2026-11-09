@@ -33,3 +33,4 @@ class SnippetAnalysisResponse(BaseModel):
     text_result: Optional[str] = None
     review_score: Optional[float] = None
     metrics: Optional[Dict[str, Any]] = None
+
