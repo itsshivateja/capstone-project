@@ -108,3 +108,4 @@ class RAGService:
         return answer, source_references
 
 rag_service = RAGService()
+

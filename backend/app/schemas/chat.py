@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class SourceReference(BaseModel):
     file_path: str
@@ -20,8 +20,7 @@ class MessageResponse(BaseModel):
     source_references: List[SourceReference] = []
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ConversationCreate(BaseModel):
     title: Optional[str] = "New Conversation"
@@ -35,5 +34,4 @@ class ConversationResponse(BaseModel):
     updated_at: datetime
     messages: Optional[List[MessageResponse]] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

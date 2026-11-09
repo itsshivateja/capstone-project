@@ -85,6 +85,17 @@ export const Login: React.FC = () => {
           >
             {submitting ? <LoadingSpinner size="sm" /> : 'Sign In'}
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setUsernameOrEmail('demo');
+              setPassword('devmind123');
+            }}
+            className="w-full py-2 px-4 bg-dark-950 hover:bg-slate-800 text-slate-300 border border-slate-700/80 rounded-lg text-xs font-mono transition flex items-center justify-center gap-2"
+          >
+            <span>⚡ Auto-Fill Demo Credentials (demo / devmind123)</span>
+          </button>
         </form>
 
         <div className="mt-6 text-center text-xs text-slate-400">
@@ -97,3 +108,4 @@ export const Login: React.FC = () => {
     </div>
   );
 };
+

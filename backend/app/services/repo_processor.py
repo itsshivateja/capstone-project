@@ -196,3 +196,4 @@ def process_repository(db: Session, project: Project, zip_path: str) -> bool:
         project.error_message = str(e)
         db.commit()
         return False
+

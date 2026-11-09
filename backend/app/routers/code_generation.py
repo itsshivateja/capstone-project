@@ -56,3 +56,4 @@ def apply_generated_code(
         f.write(payload.generated_code)
 
     return {"status": "success", "message": f"Successfully applied changes to {target_file}"}
+

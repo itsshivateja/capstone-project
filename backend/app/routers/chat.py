@@ -100,3 +100,4 @@ async def send_chat_message(
     ).order_by(Message.created_at.desc()).first()
 
     return latest_msg
+

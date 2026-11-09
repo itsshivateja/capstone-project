@@ -139,3 +139,4 @@ class VectorStoreService:
             return []
 
 vector_store = VectorStoreService()
+

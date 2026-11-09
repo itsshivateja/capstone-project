@@ -172,3 +172,4 @@ tests/test_api.py::test_project_and_repo_ingestion PASSED [100%]
 2. **Zero Direct Code Execution**: Uploaded source code is strictly treated as passive text and AST nodes; it is never executed on the host server.
 3. **Password Security**: Passwords hashed with salted bcrypt (`bcrypt.gensalt()`).
 4. **Isolated Vector Scoping**: Every Qdrant vector collection and database query is isolated by user identity and project ID.
+

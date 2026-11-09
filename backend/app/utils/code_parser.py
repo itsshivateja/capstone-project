@@ -178,3 +178,4 @@ def chunk_code_file(file_path: str, relative_path: str, language: str, max_chunk
         start += (max_chunk_lines - overlap_lines)
 
     return chunks
+

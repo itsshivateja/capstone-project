@@ -92,3 +92,4 @@ export const aiService = {
     return res.data;
   },
 };
+

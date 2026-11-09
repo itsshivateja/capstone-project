@@ -1,10 +1,13 @@
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class ProjectCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
+
+class GitHubImportRequest(BaseModel):
+    github_url: str = Field(..., description="e.g. https://github.com/fastapi/fastapi")
 
 class ProjectResponse(BaseModel):
     id: str
@@ -21,8 +24,7 @@ class ProjectResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjectFileResponse(BaseModel):
     id: str
@@ -35,8 +37,7 @@ class ProjectFileResponse(BaseModel):
     lines_count: int = 0
     is_binary: bool = False
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjectFileDetail(ProjectFileResponse):
     content: Optional[str] = None

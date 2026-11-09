@@ -69,3 +69,4 @@ def validate_and_extract_zip(zip_file_path: str, extract_to_dir: str, max_size_b
                 extracted_count += 1
 
     return True, "Archive extracted safely", extracted_count
+

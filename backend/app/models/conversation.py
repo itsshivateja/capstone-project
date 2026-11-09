@@ -29,3 +29,4 @@ class Message(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     conversation = relationship("Conversation", back_populates="messages")
+

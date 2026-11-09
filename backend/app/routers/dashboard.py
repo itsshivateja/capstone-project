@@ -107,3 +107,4 @@ def get_dashboard_stats(
             } for p in recent_projects
         ]
     }
+

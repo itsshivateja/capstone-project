@@ -1,26 +1,25 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 # --- Bug Detection ---
 class BugAnalysisRequest(BaseModel):
-    file_path: Optional[str] = None  # Analyze specific file or entire project if None
+    file_path: Optional[str] = None
 
 class BugReportResponse(BaseModel):
     id: str
     project_id: str
     file_path: str
     line_number: Optional[int] = None
-    severity: str  # Critical, High, Medium, Low
-    category: str  # Security, Logic, Null Pointer, Runtime, Performance
+    severity: str
+    category: str
     description: str
     explanation: str
     suggested_fix: str
     status: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Code Generation ---
 class CodeGenRequest(BaseModel):
@@ -58,8 +57,7 @@ class CodeReviewResponse(BaseModel):
     recommendations: List[str]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Test Generation ---
 class TestGenRequest(BaseModel):
@@ -75,8 +73,7 @@ class TestGenResponse(BaseModel):
     test_cases_summary: List[Dict[str, Any]] = []
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Documentation Generation ---
 class DocGenRequest(BaseModel):
@@ -91,5 +88,4 @@ class DocGenResponse(BaseModel):
     content_markdown: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

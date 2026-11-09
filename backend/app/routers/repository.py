@@ -89,3 +89,4 @@ def search_repository_files(
     ).limit(30).all()
 
     return matches
+

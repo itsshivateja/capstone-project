@@ -22,3 +22,4 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 'md', lab
     </div>
   );
 };
+

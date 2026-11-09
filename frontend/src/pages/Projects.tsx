@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import { useProject } from '../context/ProjectContext';
 import {
   FolderKanban,
@@ -16,7 +17,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
 export const Projects: React.FC = () => {
-  const { projects, activeProject, setActiveProject, createProject, deleteProject, uploadZip, isLoadingProjects } =
+  const { projects, activeProject, setActiveProject, createProject, deleteProject, uploadZip, isLoadingProjects, loadProjects } =
     useProject();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState<string | null>(null); // projectId
@@ -95,16 +96,31 @@ export const Projects: React.FC = () => {
             Manage your ingested software repositories and launch AST-powered AI engineering workflows.
           </p>
         </div>
-        <button
-          onClick={() => {
-            setErrorMsg(null);
-            setShowCreateModal(true);
-          }}
-          className="px-3.5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition flex items-center gap-1.5 self-start"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Repository</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={async () => {
+              try {
+                await api.post('/projects/sample-demo');
+                await loadProjects();
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            className="px-3.5 py-2 bg-dark-950 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-lg text-xs font-mono transition flex items-center gap-1.5 self-start"
+          >
+            <span>⚡ Load Sample Repository</span>
+          </button>
+          <button
+            onClick={() => {
+              setErrorMsg(null);
+              setShowCreateModal(true);
+            }}
+            className="px-3.5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition flex items-center gap-1.5 self-start"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Repository</span>
+          </button>
+        </div>
       </div>
 
       {errorMsg && (
@@ -413,3 +429,4 @@ export const Projects: React.FC = () => {
     </div>
   );
 };
+

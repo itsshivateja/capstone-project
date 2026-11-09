@@ -57,3 +57,4 @@ class DocumentationGeneratorService:
         return doc_record
 
 doc_generator = DocumentationGeneratorService()
+

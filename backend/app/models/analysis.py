@@ -60,3 +60,4 @@ class DocumentationArtifact(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     project = relationship("Project", back_populates="documentation")
+

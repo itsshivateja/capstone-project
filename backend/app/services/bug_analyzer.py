@@ -134,3 +134,4 @@ class BugAnalyzerService:
         return reports
 
 bug_analyzer = BugAnalyzerService()
+
