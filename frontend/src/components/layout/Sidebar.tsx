@@ -14,6 +14,7 @@ import {
   LogOut,
   Cpu,
   User as UserIcon,
+  Bot,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProject } from '../../context/ProjectContext';

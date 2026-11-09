@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api';
 import {
   Settings as SettingsIcon,
   Key,
@@ -7,21 +8,50 @@ import {
   ShieldCheck,
   Check,
   ExternalLink,
+  Zap,
 } from 'lucide-react';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
 export const Settings: React.FC = () => {
-  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('devmind_gemini_key') || '');
-  const [openaiKey, setOpenaiKey] = useState(() => localStorage.getItem('devmind_openai_key') || '');
-  const [groqKey, setGroqKey] = useState(() => localStorage.getItem('devmind_groq_key') || '');
+  const [geminiKey, setGeminiKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [groqKey, setGroqKey] = useState('');
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [serverMsg, setServerMsg] = useState('');
+  const [activeProvider, setActiveProvider] = useState('autonomous_local');
 
-  const handleSaveKeys = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await api.get('/settings');
+        setActiveProvider(res.data.active_provider);
+      } catch (e) {
+        console.error('Failed to load settings status', e);
+      }
+    };
+    fetchStatus();
+  }, []);
+
+  const handleSaveKeys = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('devmind_gemini_key', geminiKey.trim());
-    localStorage.setItem('devmind_openai_key', openaiKey.trim());
-    localStorage.setItem('devmind_groq_key', groqKey.trim());
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setSaving(true);
+    setServerMsg('');
+    try {
+      const res = await api.post('/settings/keys', {
+        groq_api_key: groqKey || undefined,
+        gemini_api_key: geminiKey || undefined,
+        openai_api_key: openaiKey || undefined,
+      });
+      setSaved(true);
+      setServerMsg(res.data.message || 'Settings saved successfully');
+      setActiveProvider(res.data.active_provider);
+      setTimeout(() => setSaved(false), 5000);
+    } catch (err: any) {
+      setServerMsg(err.response?.data?.detail || 'Failed to update settings');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -88,20 +118,23 @@ export const Settings: React.FC = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-            {saved ? (
-              <span className="text-xs text-emerald-400 flex items-center gap-1 font-mono">
-                <Check className="w-3.5 h-3.5" />
-                <span>Settings persisted successfully</span>
-              </span>
-            ) : (
-              <span />
-            )}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+            <div>
+              {serverMsg && (
+                <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-mono">
+                  <Check className="w-3.5 h-3.5 shrink-0" />
+                  <span>{serverMsg}</span>
+                </span>
+              )}
+            </div>
+
             <button
               type="submit"
-              className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition flex items-center gap-1.5"
+              disabled={saving}
+              className="px-5 py-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition flex items-center gap-2 self-end sm:self-auto"
             >
-              <span>Save Configurations</span>
+              {saving ? <LoadingSpinner size="sm" /> : <Zap className="w-3.5 h-3.5" />}
+              <span>{saving ? 'Testing & Saving...' : 'Save & Activate Provider'}</span>
             </button>
           </div>
         </form>

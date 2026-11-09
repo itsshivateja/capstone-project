@@ -139,3 +139,4 @@ def get_agent_roster():
             "description": "Generates READMEs, API specifications, and module architecture manuals."
         }
     ]
+

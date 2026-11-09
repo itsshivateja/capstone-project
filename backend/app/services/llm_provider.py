@@ -35,19 +35,20 @@ class LLMProvider:
             except Exception as e:
                 print(f"[LLM] Gemini call failed ({e}). Proceeding to fallback engine.")
 
-        # Try Groq API if key is present
+        # Try Groq API if key is present (High-Speed LLaMA-3.3 LPU)
         if self.groq_key:
-            try:
-                return await self._call_openai_compatible(
-                    api_key=self.groq_key,
-                    base_url="https://api.groq.com/openai/v1",
-                    model="llama-3.3-70b-versatile",
-                    system_prompt=system_prompt,
-                    user_prompt=user_prompt,
-                    temperature=temperature
-                )
-            except Exception as e:
-                print(f"[LLM] Groq call failed ({e}). Proceeding to fallback engine.")
+            for model_candidate in ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "llama-3.1-8b-instant", "llama3-70b-8192"]:
+                try:
+                    return await self._call_openai_compatible(
+                        api_key=self.groq_key,
+                        base_url="https://api.groq.com/openai/v1",
+                        model=model_candidate,
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        temperature=temperature
+                    )
+                except Exception as e:
+                    print(f"[LLM] Groq call with {model_candidate} failed: {e}")
 
         # Try OpenAI API if key is present
         openai = custom_key if (custom_key and custom_key.startswith("sk-")) else self.openai_key
