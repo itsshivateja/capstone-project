@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/.venv/
+.venv/
+env/
+venv/
+*.db
+*.sqlite3
+
+# Node & Frontend
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+.npm
+npm-debug.log*
+
+# Testing & Cache
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Storage & Uploads
+backend/uploads/
+uploads/
+backend/qdrant_storage/
+qdrant_storage/
+
+# Environment & OS
+.env
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
