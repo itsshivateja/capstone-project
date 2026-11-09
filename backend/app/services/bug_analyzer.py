@@ -91,8 +91,11 @@ class BugAnalyzerService:
                         db.add(report)
                         reports.append(report)
 
-            # 2. LLM Semantic Bug Scan (if file is primary and under 300 lines)
-            if len(lines) > 5 and len(lines) < 300 and len(reports) < 6:
+            # 2. LLM Semantic Bug Scan (only on actual code files, not docs or requirements)
+            code_extensions = (".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".go", ".rs", ".cpp", ".c")
+            is_code_file = f.file_path.lower().endswith(code_extensions)
+
+            if is_code_file and len(lines) > 5 and len(lines) < 300 and len(reports) < 6:
                 content_snippet = "".join(lines[:120])
                 prompt = (
                     f"Perform a strict static code and security audit on this file:\n"

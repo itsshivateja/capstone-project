@@ -2,6 +2,9 @@ import os
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_DB_PATH = os.path.join(BASE_DIR, "devmind.db")
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "DevMind AI"
     VERSION: str = "1.0.0"
@@ -13,16 +16,16 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
     
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./devmind.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}")
     
     # Storage & Uploads
-    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", os.path.abspath("./uploads"))
+    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", os.path.join(BASE_DIR, "uploads"))
     MAX_UPLOAD_SIZE_BYTES: int = 50 * 1024 * 1024  # 50 MB
     
     # Vector Database (Qdrant)
     QDRANT_URL: str = os.getenv("QDRANT_URL", "")
     QDRANT_API_KEY: str = os.getenv("QDRANT_API_KEY", "")
-    QDRANT_STORAGE_PATH: str = os.getenv("QDRANT_STORAGE_PATH", os.path.abspath("./qdrant_storage"))
+    QDRANT_STORAGE_PATH: str = os.getenv("QDRANT_STORAGE_PATH", os.path.join(BASE_DIR, "qdrant_storage"))
     
     # LLM Settings
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "auto")

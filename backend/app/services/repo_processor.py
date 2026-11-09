@@ -182,8 +182,17 @@ def process_repository(db: Session, project: Project, zip_path: str) -> bool:
         else:
             project.primary_language = "General"
 
-        # Index code chunks in Qdrant
+        # Index code chunks in Qdrant & persistent project cache
         if all_chunks:
+            # Save chunks.json for cross-process and restart persistence
+            project_upload_dir = os.path.dirname(zip_path)
+            try:
+                chunks_cache_file = os.path.join(project_upload_dir, "chunks.json")
+                with open(chunks_cache_file, "w", encoding="utf-8") as f:
+                    json.dump(all_chunks, f)
+            except Exception as ex:
+                print(f"[RepoProcessor] Warning saving chunks.json: {ex}")
+
             vector_store.index_chunks(project.qdrant_collection, all_chunks)
 
         project.status = "ready"

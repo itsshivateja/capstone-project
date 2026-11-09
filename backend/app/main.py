@@ -19,7 +19,8 @@ from app.routers import (
     code_review,
     test_generation,
     documentation,
-    dashboard
+    dashboard,
+    agents
 )
 
 @asynccontextmanager
@@ -55,6 +56,7 @@ app.include_router(code_review.router, prefix=settings.API_V1_PREFIX)
 app.include_router(test_generation.router, prefix=settings.API_V1_PREFIX)
 app.include_router(documentation.router, prefix=settings.API_V1_PREFIX)
 app.include_router(dashboard.router, prefix=settings.API_V1_PREFIX)
+app.include_router(agents.router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/")
 def root():
