@@ -110,9 +110,15 @@ def get_agent_roster():
         },
         {
             "id": "bug_detector",
-            "name": "Bug Detection & Security Agent",
-            "role": "Vulnerability Analysis",
-            "description": "Runs static rule verification and LLM semantic security checks."
+            "name": "Bug Detection Agent",
+            "role": "Logic & Defect Analysis",
+            "description": "Runs AST syntax analysis and detects logical defects, null dereferences, and runtime errors."
+        },
+        {
+            "id": "security_agent",
+            "name": "Security Analysis Agent",
+            "role": "AppSec & Vulnerability Audit",
+            "description": "Audits OWASP Top 10 vulnerabilities, exposed credentials, SQLi, and unsafe deserialization."
         },
         {
             "id": "code_gen",

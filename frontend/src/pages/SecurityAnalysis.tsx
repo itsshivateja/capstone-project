@@ -336,3 +336,4 @@ export const SecurityAnalysis: React.FC = () => {
     </div>
   );
 };
+

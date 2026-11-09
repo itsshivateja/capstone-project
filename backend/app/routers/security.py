@@ -210,3 +210,4 @@ async def scan_project_security(
         breakdown=breakdown,
         vulnerabilities=aggregated_vulns
     )
+

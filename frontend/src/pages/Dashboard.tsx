@@ -15,6 +15,8 @@ import {
   FileText,
   Clock,
   Layers,
+  Bot,
+  Github,
 } from 'lucide-react';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { StatusBadge } from '../components/common/StatusBadge';
@@ -81,64 +83,130 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Two Ways of Providing Code: Option 1 & Option 2 Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Option 1: Upload Project */}
-        <div className="bg-dark-900 border border-slate-800 hover:border-brand-500/50 rounded-2xl p-6 transition flex flex-col justify-between group shadow-lg">
+      {/* Four Core Workflows Hub */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-semibold">
-                Option 1: Complete Project
-              </span>
-              <FolderKanban className="w-5 h-5 text-brand-400 group-hover:scale-110 transition-transform" />
-            </div>
-            <h2 className="text-lg font-bold text-white tracking-tight">Upload Repository (ZIP)</h2>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              Upload an entire codebase archive. DevMind AI extracts files safely, parses AST syntax, extracts symbols, builds Qdrant vector embeddings, and enables full multi-file RAG chat.
-            </p>
-            <div className="flex flex-wrap gap-2 mt-4 text-[11px] text-slate-400 font-mono">
-              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">ZIP File Scan</span>
-              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Folder Tree</span>
-              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Vector Embeddings</span>
-              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">RAG Chat</span>
-            </div>
+            <h2 className="text-base font-bold text-white tracking-tight">Four Core Engineering Workflows</h2>
+            <p className="text-xs text-slate-400">Choose an execution mode to begin analysis, coding, or autonomous automation.</p>
           </div>
-          <button
-            onClick={() => navigate('/projects')}
-            className="mt-5 w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-brand-500/20 transition flex items-center justify-center gap-2"
-          >
-            <span>Upload or Select Repository</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </button>
+          <span className="text-[11px] font-mono text-brand-400 font-semibold px-2.5 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20">
+            DevMind AI v1.0
+          </span>
         </div>
 
-        {/* Option 2: Paste Code */}
-        <div className="bg-dark-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-6 transition flex flex-col justify-between group shadow-lg">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
-                Option 2: Instant Sandbox
-              </span>
-              <Code2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Mode 1: Project Mode */}
+          <div className="bg-dark-900 border border-slate-800 hover:border-brand-500/50 rounded-2xl p-5 transition flex flex-col justify-between group shadow-lg">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-bold">
+                  Mode 1
+                </span>
+                <FolderKanban className="w-5 h-5 text-brand-400 group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Project Mode</h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Upload complete ZIP archives or connect GitHub repos. Scans files, AST symbols, dependencies, and indexes Qdrant vectors.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-3 text-[10px] text-slate-400 font-mono">
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">ZIP Upload</span>
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">GitHub</span>
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">RAG Ingestion</span>
+              </div>
             </div>
-            <h2 className="text-lg font-bold text-white tracking-tight">Paste & Analyze Code</h2>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              Paste or type code directly into Monaco Editor. Run 9 instant AI actions: Detect Bugs, Fix My Code (with side-by-side diff), Optimize, Explain, Review, Security, Tests, Docs, & Codegen.
-            </p>
-            <div className="flex flex-wrap gap-2 mt-4 text-[11px] text-slate-400 font-mono">
-              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Monaco Editor</span>
-              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Side-by-Side Diff</span>
-              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Auto Fix & Apply</span>
-              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">9 AI Actions</span>
-            </div>
+            <button
+              onClick={() => navigate('/projects')}
+              className="mt-4 w-full py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg shadow-md transition flex items-center justify-center gap-1.5"
+            >
+              <span>Open Project Mode</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <button
-            onClick={() => navigate('/sandbox')}
-            className="mt-5 w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2"
-          >
-            <span>Open Code Sandbox (Paste Mode)</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </button>
+
+          {/* Mode 2: Code Mode */}
+          <div className="bg-dark-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 transition flex flex-col justify-between group shadow-lg">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                  Mode 2
+                </span>
+                <Code2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Code Mode</h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Paste or write code in Monaco Editor. Run 9 instant actions: Detect Bugs, Fix My Code with side-by-side Diff, Explain, Optimize & Tests.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-3 text-[10px] text-slate-400 font-mono">
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">Monaco Editor</span>
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">Diff Viewer</span>
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">9 AI Actions</span>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/sandbox')}
+              className="mt-4 w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-md transition flex items-center justify-center gap-1.5"
+            >
+              <span>Open Code Mode</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Mode 3: AI Chat Mode */}
+          <div className="bg-dark-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl p-5 transition flex flex-col justify-between group shadow-lg">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                  Mode 3
+                </span>
+                <MessageSquareCode className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-sm font-bold text-white">AI Chat Mode</h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Chat with complete repository context. Ask architectural questions, locate features, debug logic, and get line-level source citations.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-3 text-[10px] text-slate-400 font-mono">
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">RAG Chat</span>
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">Gemini & Groq</span>
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">:L10-L45 Cites</span>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/chat')}
+              className="mt-4 w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-md transition flex items-center justify-center gap-1.5"
+            >
+              <span>Open AI Chat</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Mode 4: Agent Mode */}
+          <div className="bg-dark-900 border border-slate-800 hover:border-purple-500/50 rounded-2xl p-5 transition flex flex-col justify-between group shadow-lg">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 font-bold">
+                  Mode 4
+                </span>
+                <Bot className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Agent Mode</h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Autonomous LangGraph supervisor orchestrating 7 specialized agents: Repo Analyst, Bug Detector, Security, Codegen, Review, Test, & Docs.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-3 text-[10px] text-slate-400 font-mono">
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">LangGraph</span>
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">7 Sub-Agents</span>
+                <span className="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">Step Traces</span>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/agents')}
+              className="mt-4 w-full py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg shadow-md transition flex items-center justify-center gap-1.5"
+            >
+              <span>Launch AI Agents</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -14,7 +14,8 @@ class DevMindAgentSupervisor:
     Routes developer intents to specialized agents with shared repository context.
     """
     AGENT_ROUTES = {
-        "bug_detection": ["bug", "vulnerability", "security", "error", "flaw", "issue"],
+        "security_analysis": ["security", "owasp", "secret", "sqli", "injection", "cwe", "threat"],
+        "bug_detection": ["bug", "error", "flaw", "issue", "defect", "null pointer"],
         "code_generation": ["generate", "build", "create", "implement", "add endpoint", "scaffold"],
         "code_review": ["review", "quality", "clean code", "audit", "metrics"],
         "test_generation": ["test", "pytest", "unit test", "mock", "test case"],
@@ -38,7 +39,30 @@ class DevMindAgentSupervisor:
     ) -> Dict[str, Any]:
         intent = self.route_intent(user_query)
         
-        if intent == "bug_detection":
+        if intent == "security_analysis":
+            from app.routers.security import scan_project_security
+            sec_res = await scan_project_security(project.id, db, None)
+            return {
+                "agent": "Security Analysis Agent",
+                "intent": intent,
+                "status": "success",
+                "result": {
+                    "security_score": sec_res.security_score,
+                    "risk_level": sec_res.risk_level,
+                    "total_vulnerabilities": sec_res.total_vulnerabilities,
+                    "breakdown": sec_res.breakdown,
+                    "top_vulnerabilities": [
+                        {
+                            "title": v.title,
+                            "severity": v.severity,
+                            "cwe": v.cwe_id,
+                            "file": v.file_path,
+                            "line": v.line_number
+                        } for v in sec_res.vulnerabilities[:5]
+                    ]
+                }
+            }
+        elif intent == "bug_detection":
             reports = await bug_analyzer.analyze_project_or_file(db, project, target_file)
             return {
                 "agent": "Bug Detection Agent",

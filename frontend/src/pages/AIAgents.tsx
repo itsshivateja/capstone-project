@@ -17,6 +17,7 @@ import {
   FileCheck2,
   Copy,
   Check,
+  Lock,
 } from 'lucide-react';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { MonacoEditorWrapper } from '../components/common/MonacoEditorWrapper';
@@ -27,6 +28,7 @@ const AGENT_ICON_MAP: Record<string, any> = {
   repo_analyst: Layers,
   explainer: Cpu,
   bug_detector: ShieldAlert,
+  security_agent: Lock,
   code_gen: Sparkles,
   code_reviewer: FileCheck2,
   test_gen: TestTubes,

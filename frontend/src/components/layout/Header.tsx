@@ -14,12 +14,13 @@ import {
   AlertTriangle,
   Cpu,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const Header: React.FC = () => {
   const { projects, activeProject, setActiveProject } = useProject();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchVal, setSearchVal] = useState('');
 
@@ -94,16 +95,48 @@ export const Header: React.FC = () => {
         )}
       </div>
 
-      {/* Middle: Quick Search Input */}
-      <div className="hidden lg:flex items-center relative w-80">
-        <Search className="w-3.5 h-3.5 absolute left-3 text-slate-500" />
-        <input
-          type="text"
-          value={searchVal}
-          onChange={(e) => setSearchVal(e.target.value)}
-          placeholder="Search features, files, or actions..."
-          className="w-full pl-9 pr-3 py-1.5 bg-dark-950 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-brand-500 transition"
-        />
+      {/* Middle: 4 Core Mode Quick Switcher */}
+      <div className="hidden lg:flex items-center gap-1 bg-dark-950 p-1 rounded-xl border border-slate-800">
+        <button
+          onClick={() => navigate('/projects')}
+          className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+            location.pathname.startsWith('/projects') || location.pathname.startsWith('/explorer')
+              ? 'bg-brand-600 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          1. Project Mode
+        </button>
+        <button
+          onClick={() => navigate('/sandbox')}
+          className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+            location.pathname.startsWith('/sandbox')
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          2. Code Mode
+        </button>
+        <button
+          onClick={() => navigate('/chat')}
+          className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+            location.pathname.startsWith('/chat')
+              ? 'bg-indigo-600 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          3. AI Chat
+        </button>
+        <button
+          onClick={() => navigate('/agents')}
+          className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+            location.pathname.startsWith('/agents')
+              ? 'bg-purple-600 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          4. Agent Mode
+        </button>
       </div>
 
       {/* Right: Engine Status Pills, Notifications & User */}

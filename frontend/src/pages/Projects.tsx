@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CheckCircle2,
   X,
+  Github,
 } from 'lucide-react';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -21,6 +22,9 @@ export const Projects: React.FC = () => {
     useProject();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState<string | null>(null); // projectId
+  const [showGithubModal, setShowGithubModal] = useState(false);
+  const [githubUrl, setGithubUrl] = useState('');
+  const [isImportingGithub, setIsImportingGithub] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDesc, setNewProjectDesc] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -45,6 +49,26 @@ export const Projects: React.FC = () => {
       return;
     }
     setSelectedFile(file);
+  };
+
+  const handleGithubImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!githubUrl.trim()) return;
+    setIsImportingGithub(true);
+    setErrorMsg(null);
+    try {
+      const match = githubUrl.trim().match(/github\.com\/([^/]+)\/([^/]+?)(?:\.git|\/)?$/);
+      const repoName = match ? match[2] : 'GitHub Repo';
+      const proj = await createProject(repoName, `Imported from ${githubUrl.trim()}`);
+      await api.post(`/projects/${proj.id}/import-github`, { github_url: githubUrl.trim() });
+      await loadProjects();
+      setShowGithubModal(false);
+      setGithubUrl('');
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.detail || 'Failed to import from GitHub. Ensure the repository is public.');
+    } finally {
+      setIsImportingGithub(false);
+    }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -152,6 +176,16 @@ export const Projects: React.FC = () => {
             className="px-3.5 py-2 bg-dark-950 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-lg text-xs font-mono transition flex items-center gap-1.5 self-start"
           >
             <span>⚡ Load Sample Repository</span>
+          </button>
+          <button
+            onClick={() => {
+              setErrorMsg(null);
+              setShowGithubModal(true);
+            }}
+            className="px-3.5 py-2 bg-dark-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1.5 self-start"
+          >
+            <Github className="w-4 h-4 text-white" />
+            <span>Connect GitHub</span>
           </button>
           <button
             onClick={() => {
@@ -470,6 +504,75 @@ export const Projects: React.FC = () => {
                   className="px-4 py-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition flex items-center gap-2"
                 >
                   {isUploading ? <LoadingSpinner size="sm" /> : 'Start Ingestion'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Connect GitHub Modal */}
+      {showGithubModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-dark-900 border border-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Github className="w-5 h-5 text-white" />
+                <h3 className="text-base font-bold text-white">Import from GitHub</h3>
+              </div>
+              <button
+                disabled={isImportingGithub}
+                onClick={() => setShowGithubModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleGithubImport} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Public GitHub Repository URL
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={githubUrl}
+                  disabled={isImportingGithub}
+                  onChange={(e) => setGithubUrl(e.target.value)}
+                  placeholder="https://github.com/fastapi/fastapi"
+                  className="w-full px-3 py-2 bg-dark-950 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-brand-500 font-mono"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  DevMind AI will fetch the main archive, extract source files, parse AST, and index embeddings into Qdrant.
+                </p>
+              </div>
+
+              {isImportingGithub && (
+                <div className="space-y-2 bg-dark-950/60 p-3 rounded-lg border border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
+                    <LoadingSpinner size="sm" />
+                    <span>Cloning & Vector Indexing GitHub Repository...</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  disabled={isImportingGithub}
+                  onClick={() => setShowGithubModal(false)}
+                  className="px-3.5 py-2 text-xs text-slate-400 hover:text-white transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!githubUrl.trim() || isImportingGithub}
+                  className="px-4 py-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition flex items-center gap-2"
+                >
+                  {isImportingGithub ? <LoadingSpinner size="sm" /> : <Github className="w-4 h-4" />}
+                  <span>{isImportingGithub ? 'Importing...' : 'Clone & Ingest'}</span>
                 </button>
               </div>
             </form>
