@@ -159,3 +159,57 @@ def test_project_and_repo_ingestion():
     assert stats["total_projects"] >= 1
     assert stats["total_bugs"] >= 1
     assert stats["total_conversations"] >= 1
+
+def test_snippet_analysis_workflow():
+    import uuid
+    token_resp = client.post("/api/v1/auth/register", json={
+        "email": f"snip_tester_{uuid.uuid4().hex[:6]}@devmind.ai",
+        "username": f"snip_user_{uuid.uuid4().hex[:6]}",
+        "password": "Password123!",
+        "full_name": "Snippet Tester"
+    })
+    token = token_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    sample_code = """
+def divide_items(items, divisor):
+    # Potential zero division
+    return [x / divisor for x in items]
+"""
+
+    # 1. Detect language
+    det_resp = client.post("/api/v1/snippet/detect-language", json={"code": sample_code})
+    assert det_resp.status_code == 200
+    assert det_resp.json()["language"] == "python"
+
+    # 2. Detect bugs
+    bug_resp = client.post("/api/v1/snippet/analyze", json={
+        "code": sample_code,
+        "language": "python",
+        "action": "detect_bugs"
+    }, headers=headers)
+    assert bug_resp.status_code == 200
+    bug_data = bug_resp.json()
+    assert bug_data["action"] == "detect_bugs"
+    assert "bugs" in bug_data or "text_result" in bug_data
+
+    # 3. Fix code
+    fix_resp = client.post("/api/v1/snippet/analyze", json={
+        "code": sample_code,
+        "language": "python",
+        "action": "fix_code"
+    }, headers=headers)
+    assert fix_resp.status_code == 200
+    fix_data = fix_resp.json()
+    assert fix_data["action"] == "fix_code"
+    assert fix_data["fix_result"] is not None
+    assert len(fix_data["fix_result"]["corrected_code"]) > 0
+
+    # 4. Explain code
+    exp_resp = client.post("/api/v1/snippet/analyze", json={
+        "code": sample_code,
+        "language": "python",
+        "action": "explain"
+    }, headers=headers)
+    assert exp_resp.status_code == 200
+    assert len(exp_resp.json()["text_result"]) > 10

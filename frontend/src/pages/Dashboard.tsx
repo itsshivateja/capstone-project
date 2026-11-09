@@ -81,6 +81,67 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Two Ways of Providing Code: Option 1 & Option 2 Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Option 1: Upload Project */}
+        <div className="bg-dark-900 border border-slate-800 hover:border-brand-500/50 rounded-2xl p-6 transition flex flex-col justify-between group shadow-lg">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-semibold">
+                Option 1: Complete Project
+              </span>
+              <FolderKanban className="w-5 h-5 text-brand-400 group-hover:scale-110 transition-transform" />
+            </div>
+            <h2 className="text-lg font-bold text-white tracking-tight">Upload Repository (ZIP)</h2>
+            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+              Upload an entire codebase archive. DevMind AI extracts files safely, parses AST syntax, extracts symbols, builds Qdrant vector embeddings, and enables full multi-file RAG chat.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4 text-[11px] text-slate-400 font-mono">
+              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">ZIP File Scan</span>
+              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Folder Tree</span>
+              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Vector Embeddings</span>
+              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">RAG Chat</span>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/projects')}
+            className="mt-5 w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-brand-500/20 transition flex items-center justify-center gap-2"
+          >
+            <span>Upload or Select Repository</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Option 2: Paste Code */}
+        <div className="bg-dark-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-6 transition flex flex-col justify-between group shadow-lg">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                Option 2: Instant Sandbox
+              </span>
+              <Code2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+            </div>
+            <h2 className="text-lg font-bold text-white tracking-tight">Paste & Analyze Code</h2>
+            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+              Paste or type code directly into Monaco Editor. Run 9 instant AI actions: Detect Bugs, Fix My Code (with side-by-side diff), Optimize, Explain, Review, Security, Tests, Docs, & Codegen.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4 text-[11px] text-slate-400 font-mono">
+              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Monaco Editor</span>
+              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Side-by-Side Diff</span>
+              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">Auto Fix & Apply</span>
+              <span className="bg-dark-950 px-2 py-1 rounded border border-slate-800">9 AI Actions</span>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/sandbox')}
+            className="mt-5 w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2"
+          >
+            <span>Open Code Sandbox (Paste Mode)</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* Primary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-dark-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">

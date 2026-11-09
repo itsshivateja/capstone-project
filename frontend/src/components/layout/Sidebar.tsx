@@ -15,13 +15,15 @@ import {
   Cpu,
   User as UserIcon,
   Bot,
+  Code2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProject } from '../../context/ProjectContext';
 
 const NAV_ITEMS = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Projects', path: '/projects', icon: FolderKanban },
+  { name: 'Code Sandbox (Paste)', path: '/sandbox', icon: Code2 },
+  { name: 'Projects (Upload)', path: '/projects', icon: FolderKanban },
   { name: 'Repo Explorer', path: '/explorer', icon: FolderTree },
   { name: 'AI Code Chat', path: '/chat', icon: MessageSquareCode },
   { name: 'AI Agents Hub', path: '/agents', icon: Bot },

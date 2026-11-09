@@ -16,6 +16,7 @@ import { CodeReview } from './pages/CodeReview';
 import { TestGeneration } from './pages/TestGeneration';
 import { Documentation } from './pages/Documentation';
 import { Settings } from './pages/Settings';
+import { CodeSandbox } from './pages/CodeSandbox';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -89,6 +90,7 @@ export const App: React.FC = () => {
             >
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="sandbox" element={<CodeSandbox />} />
               <Route path="projects" element={<Projects />} />
               <Route path="explorer" element={<RepoExplorer />} />
               <Route path="chat" element={<AIChat />} />

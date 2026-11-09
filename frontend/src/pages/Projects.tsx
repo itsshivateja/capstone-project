@@ -26,9 +26,26 @@ export const Projects: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadStage, setUploadStage] = useState<string>('Uploading ZIP archive...');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const handleSelectFile = (file: File) => {
+    setErrorMsg(null);
+    if (!file.name.toLowerCase().endsWith('.zip')) {
+      setErrorMsg('Invalid file format: Please select a valid .zip archive.');
+      setSelectedFile(null);
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setErrorMsg(`File exceeds 50MB limit (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please upload a smaller repository.`);
+      setSelectedFile(null);
+      return;
+    }
+    setSelectedFile(file);
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +73,7 @@ export const Projects: React.FC = () => {
 
     setIsUploading(true);
     setUploadProgress(0);
+    setUploadStage('Uploading ZIP archive...');
     setErrorMsg(null);
 
     try {
@@ -63,6 +81,9 @@ export const Projects: React.FC = () => {
         if (event.total) {
           const percent = Math.round((event.loaded * 100) / event.total);
           setUploadProgress(percent);
+          if (percent >= 100) {
+            setUploadStage('Extracting & Vector Indexing AST Chunks...');
+          }
         }
       });
       setShowUploadModal(null);
@@ -85,7 +106,29 @@ export const Projects: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
+      {/* Quick Switch Banner to Option 2: Paste Code */}
+      <div className="bg-gradient-to-r from-dark-900 to-emerald-950/30 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+            <FileCode className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xs font-bold text-white flex items-center gap-2">
+              <span>Looking to test a single file or snippet?</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">Option 2: Paste Code</span>
+            </h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Paste or type code into Monaco Editor and run the 9 instant actions (Bugs, Auto-Fix with side-by-side Diff, Optimization, Tests, Docs) without uploading a ZIP archive.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => navigate('/sandbox')}
+          className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition whitespace-nowrap self-stretch sm:self-auto text-center"
+        >
+          Open Code Sandbox
+        </button>
+      </div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -344,37 +387,70 @@ export const Projects: React.FC = () => {
             </div>
 
             <form onSubmit={handleUpload} className="space-y-4">
-              <div className="border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-xl p-6 text-center transition cursor-pointer relative bg-dark-950/40">
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleSelectFile(e.dataTransfer.files[0]);
+                  }
+                }}
+                className={`border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer relative ${
+                  isDragging
+                    ? 'border-brand-400 bg-brand-500/10 scale-[1.01]'
+                    : 'border-slate-700 hover:border-brand-500 bg-dark-950/40'
+                }`}
+              >
                 <input
                   type="file"
                   accept=".zip"
-                  required
+                  required={!selectedFile}
                   disabled={isUploading}
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
-                      setSelectedFile(e.target.files[0]);
+                      handleSelectFile(e.target.files[0]);
                     }
                   }}
                   className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                 />
-                <Upload className="w-8 h-8 text-slate-500 mx-auto mb-2" />
+                <Upload className={`w-8 h-8 mx-auto mb-2 transition ${isDragging ? 'text-brand-400 scale-110' : 'text-slate-500'}`} />
                 <p className="text-xs font-medium text-slate-300">
-                  {selectedFile ? selectedFile.name : 'Click or drag ZIP archive here'}
+                  {selectedFile ? (
+                    <span className="text-brand-400 font-mono font-semibold">{selectedFile.name}</span>
+                  ) : (
+                    'Drag & Drop ZIP file here, or click to browse'
+                  )}
                 </p>
-                <p className="text-[10px] text-slate-500 mt-1">Maximum 50MB (.zip archives only)</p>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Supports .zip archives up to 50MB (auto-ignores node_modules, .git, venvs)
+                </p>
               </div>
 
               {isUploading && (
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-mono text-slate-400">
-                    <span>Extracting & Vector Indexing...</span>
-                    <span>{uploadProgress}%</span>
+                <div className="space-y-2 bg-dark-950/60 p-3 rounded-lg border border-slate-800">
+                  <div className="flex justify-between text-xs font-mono text-slate-300">
+                    <span className="flex items-center gap-2">
+                      <LoadingSpinner size="sm" />
+                      <span>{uploadStage}</span>
+                    </span>
+                    <span className="font-bold text-brand-400">{uploadProgress}%</span>
                   </div>
                   <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-brand-500 transition-all duration-200"
                       style={{ width: `${uploadProgress}%` }}
                     />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-500">
+                    <span>1. Archive Upload</span>
+                    <span>2. Zip Slip Sanitization</span>
+                    <span>3. AST Extraction</span>
+                    <span>4. Qdrant Index</span>
                   </div>
                 </div>
               )}
