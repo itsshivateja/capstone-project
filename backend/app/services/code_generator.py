@@ -5,7 +5,7 @@ from app.models.project import Project
 from app.services.vector_store import vector_store
 from app.services.llm_provider import llm_provider
 
-CODEGEN_SYSTEM_PROMPT = """You are DevMind AI Code Generator, an expert software engineer.
+CODEGEN_SYSTEM_PROMPT = """You are AURON AI Code Generator, an expert software engineer.
 Generate production-ready, clean, idiomatic code that matches the project's architecture, dependencies, and style.
 
 Provide your response strictly in the following format:

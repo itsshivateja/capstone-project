@@ -65,7 +65,7 @@ async def refactor_code_snippet(
         selected_goal += f" Additional requirements: {payload.custom_instruction}"
 
     system_prompt = (
-        "You are DevMind AI's Principal Refactoring Architect. "
+        "You are AURON AI's Principal Refactoring Architect. "
         f"Primary Refactoring Objective: {selected_goal}\n"
         "Analyze the provided code and generate a clean, production-grade refactored version. "
         "Preserve exact intended business logic while elevating quality and readability.\n"

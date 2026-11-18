@@ -48,6 +48,28 @@ def register_user(db: Session, user_data: UserRegister) -> User:
     db.refresh(new_user)
     return new_user
 
+def ensure_demo_user(db: Session) -> None:
+    demo_user = db.query(User).filter(User.username == "demo").first()
+    if demo_user:
+        if demo_user.email != "demo@auron.ai":
+            email_owner = db.query(User).filter(
+                User.email == "demo@auron.ai",
+                User.id != demo_user.id,
+            ).first()
+            if email_owner:
+                raise RuntimeError("Cannot update the demo account email because demo@auron.ai is already in use.")
+            demo_user.email = "demo@auron.ai"
+            db.commit()
+        return
+
+    db.add(User(
+        email="demo@auron.ai",
+        username="demo",
+        hashed_password=get_password_hash("devmind123"),
+        full_name="Demo Developer",
+    ))
+    db.commit()
+
 def authenticate_user(db: Session, login_data: UserLogin) -> User:
     user = db.query(User).filter(
         (User.username == login_data.username_or_email) | (User.email == login_data.username_or_email)
@@ -57,4 +79,3 @@ def authenticate_user(db: Session, login_data: UserLogin) -> User:
     if not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username/email or password")
     return user
-

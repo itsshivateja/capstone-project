@@ -16,23 +16,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('devmind_user');
+    const saved = localStorage.getItem('auron_ai_user');
     return saved ? JSON.parse(saved) : null;
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('devmind_token'));
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('auron_ai_token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem('devmind_token');
+      const storedToken = localStorage.getItem('auron_ai_token');
       if (storedToken) {
         try {
           const currentUser = await authService.getMe();
           setUser(currentUser);
-          localStorage.setItem('devmind_user', JSON.stringify(currentUser));
+          localStorage.setItem('auron_ai_user', JSON.stringify(currentUser));
         } catch (err) {
-          localStorage.removeItem('devmind_token');
-          localStorage.removeItem('devmind_user');
+          localStorage.removeItem('auron_ai_token');
+          localStorage.removeItem('auron_ai_user');
           setUser(null);
           setToken(null);
         }
@@ -45,26 +45,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (credentials: { username_or_email: string; password: string }) => {
     const data = await authService.login(credentials);
-    localStorage.setItem('devmind_token', data.access_token);
-    localStorage.setItem('devmind_user', JSON.stringify(data.user));
+    localStorage.setItem('auron_ai_token', data.access_token);
+    localStorage.setItem('auron_ai_user', JSON.stringify(data.user));
     setToken(data.access_token);
     setUser(data.user);
   };
 
   const register = async (credentials: { email: string; username: string; password: string; full_name?: string }) => {
     const data = await authService.register(credentials);
-    localStorage.setItem('devmind_token', data.access_token);
-    localStorage.setItem('devmind_user', JSON.stringify(data.user));
+    localStorage.setItem('auron_ai_token', data.access_token);
+    localStorage.setItem('auron_ai_user', JSON.stringify(data.user));
     setToken(data.access_token);
     setUser(data.user);
   };
 
   const logout = () => {
-    localStorage.removeItem('devmind_token');
-    localStorage.removeItem('devmind_user');
+    localStorage.removeItem('auron_ai_token');
+    localStorage.removeItem('auron_ai_user');
     setUser(null);
     setToken(null);
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   return (

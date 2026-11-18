@@ -12,27 +12,26 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
         return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
       case 'indexing':
       case 'uploaded':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse';
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
       case 'failed':
       case 'critical':
         return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
       case 'high':
-        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+        return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
       case 'medium':
-        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+        return 'bg-graphite-raised text-graphite-text border-white/[0.08]';
       case 'low':
       case 'info':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-graphite-raised text-graphite-muted border-white/[0.08]';
       case 'ignored':
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
       default:
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+        return 'bg-graphite-deep text-graphite-muted border-white/[0.06]';
     }
   };
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium border ${getBadgeStyle(
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${getBadgeStyle(
         status
       )}`}
     >

@@ -14,7 +14,7 @@ def test_health_check():
 def test_auth_workflow():
     import uuid
     rand_suffix = str(uuid.uuid4())[:8]
-    email = f"dev_{rand_suffix}@devmind.ai"
+    email = f"dev_{rand_suffix}@auron.ai"
     username = f"dev_{rand_suffix}"
     password = "DevPassword123!"
 
@@ -44,10 +44,22 @@ def test_auth_workflow():
     assert me_resp.status_code == 200
     assert me_resp.json()["email"] == email
 
+def test_demo_user_profile_uses_auron_email():
+    login_resp = client.post("/api/v1/auth/login", json={
+        "username_or_email": "demo",
+        "password": "devmind123",
+    })
+    assert login_resp.status_code == 200
+
+    token = login_resp.json()["access_token"]
+    me_resp = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert me_resp.status_code == 200
+    assert me_resp.json()["email"] == "demo@auron.ai"
+
 def test_project_and_repo_ingestion():
     import uuid
     token_resp = client.post("/api/v1/auth/register", json={
-        "email": f"project_tester_{uuid.uuid4().hex[:6]}@devmind.ai",
+        "email": f"project_tester_{uuid.uuid4().hex[:6]}@auron.ai",
         "username": f"proj_user_{uuid.uuid4().hex[:6]}",
         "password": "Password123!",
         "full_name": "Project Tester"
@@ -163,7 +175,7 @@ def test_project_and_repo_ingestion():
 def test_snippet_analysis_workflow():
     import uuid
     token_resp = client.post("/api/v1/auth/register", json={
-        "email": f"snip_tester_{uuid.uuid4().hex[:6]}@devmind.ai",
+        "email": f"snip_tester_{uuid.uuid4().hex[:6]}@auron.ai",
         "username": f"snip_user_{uuid.uuid4().hex[:6]}",
         "password": "Password123!",
         "full_name": "Snippet Tester"

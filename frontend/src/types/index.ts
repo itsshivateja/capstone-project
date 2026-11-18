@@ -170,3 +170,55 @@ export interface DashboardStats {
   }>;
 }
 
+export interface IssueItem {
+  id: string;
+  title: string;
+  severity: 'Critical' | 'High' | 'Medium' | 'Low' | string;
+  category: string;
+  file_path?: string;
+  line_number?: number;
+  source_type: 'static_analysis' | 'ai_observation' | 'test_verification' | string;
+  description: string;
+  deduction?: number;
+  recommendation?: string;
+}
+
+export interface CategoryScore {
+  category: string;
+  weight: number;
+  score?: number | null;
+  status: string;
+  deduction_reasons: string[];
+  evidence: string[];
+}
+
+export interface HealthRecommendation {
+  priority: string;
+  category: string;
+  suggestion: string;
+  file_path?: string;
+}
+
+export interface RepositoryHealthScoreResponse {
+  project_id: string;
+  overall_score: number;
+  grade: string;
+  summary: string;
+  analyzed_at: string;
+  categories: {
+    code_quality: CategoryScore;
+    security: CategoryScore;
+    testing: CategoryScore;
+    maintainability: CategoryScore;
+    documentation: CategoryScore;
+    architecture: CategoryScore;
+    [key: string]: CategoryScore;
+  };
+  critical_issues: IssueItem[];
+  high_issues: IssueItem[];
+  medium_issues: IssueItem[];
+  low_issues: IssueItem[];
+  positive_findings: string[];
+  recommendations: HealthRecommendation[];
+}
+

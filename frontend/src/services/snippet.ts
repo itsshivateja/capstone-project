@@ -40,6 +40,8 @@ export interface SnippetAnalysisResponse {
   has_bugs?: boolean;
   bugs?: BugItem[];
   fix_result?: FixCodeResult;
+  generated_code?: string;
+  explanation?: string;
   text_result?: string;
   review_score?: number;
   metrics?: Record<string, any>;
@@ -48,6 +50,53 @@ export interface SnippetAnalysisResponse {
 export interface LanguageDetectResponse {
   language: string;
   confidence: number;
+}
+
+// ================= THREE AI PROVIDERS INTERFACES =================
+export interface ProviderCodeSolution {
+  provider: 'gemini' | 'groq' | 'openai';
+  provider_name: string;
+  status: 'success' | 'error';
+  code?: string | null;
+  explanation?: string | null;
+  error_message?: string | null;
+  model?: string | null;
+  duration_ms?: number | null;
+  line_count?: number | null;
+}
+
+export interface MultiProviderGenerationRequest {
+  prompt: string;
+  language: string;
+  existing_code?: string;
+}
+
+export interface MultiProviderGenerationResponse {
+  prompt: string;
+  language: string;
+  solutions: {
+    gemini: ProviderCodeSolution;
+    groq: ProviderCodeSolution;
+    openai: ProviderCodeSolution;
+  };
+  recommended_provider?: 'gemini' | 'groq' | 'openai' | 'comparable' | null;
+  recommendation_reason?: string | null;
+}
+
+// ================= OUTPUT TERMINAL / EXECUTION INTERFACES =================
+export interface CodeRunRequest {
+  code: string;
+  language: string;
+  stdin?: string;
+}
+
+export interface CodeRunResponse {
+  status: 'success' | 'error' | 'timeout' | 'unsupported';
+  stdout: string;
+  stderr: string;
+  exit_code: number;
+  execution_time_ms: number;
+  sandbox_type: string;
 }
 
 export const snippetService = {
@@ -60,5 +109,14 @@ export const snippetService = {
     const res = await api.post<LanguageDetectResponse>('/snippet/detect-language', { code });
     return res.data;
   },
-};
 
+  async generateMultiProvider(payload: MultiProviderGenerationRequest): Promise<MultiProviderGenerationResponse> {
+    const res = await api.post<MultiProviderGenerationResponse>('/snippet/generate-multi', payload);
+    return res.data;
+  },
+
+  async runCode(payload: CodeRunRequest): Promise<CodeRunResponse> {
+    const res = await api.post<CodeRunResponse>('/snippet/run', payload);
+    return res.data;
+  },
+};

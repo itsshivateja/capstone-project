@@ -8,7 +8,7 @@ from app.services.code_reviewer import code_reviewer
 from app.services.test_generator import test_generator
 from app.services.doc_generator import doc_generator
 
-class DevMindAgentSupervisor:
+class AuronAIAgentSupervisor:
     """
     LangGraph-inspired Coordinator/Supervisor Agent.
     Routes developer intents to specialized agents with shared repository context.
@@ -41,7 +41,9 @@ class DevMindAgentSupervisor:
         
         if intent == "security_analysis":
             from app.routers.security import scan_project_security
-            sec_res = await scan_project_security(project.id, db, None)
+            from app.models.user import User
+            user = db.query(User).filter(User.id == project.user_id).first()
+            sec_res = await scan_project_security(project.id, db, user)
             return {
                 "agent": "Security Analysis Agent",
                 "intent": intent,
@@ -135,5 +137,5 @@ class DevMindAgentSupervisor:
                 "message": f"Processed query using repository context for {project.name}."
             }
 
-agent_supervisor = DevMindAgentSupervisor()
+agent_supervisor = AuronAIAgentSupervisor()
 

@@ -223,7 +223,7 @@ export const TestGeneration: React.FC = () => {
                   <TestTubes className="w-10 h-10 text-slate-700 mb-2" />
                   <p className="font-medium text-slate-300">Ready to Generate Unit Tests</p>
                   <p className="text-slate-500 mt-1 max-w-sm">
-                    Select a target module and let DevMind AI generate complete pytest cases with edge bounds, negative checks, and mocking fixtures.
+                    Select a target module and let AURON AI generate complete pytest cases with edge bounds, negative checks, and mocking fixtures.
                   </p>
                 </div>
               )}

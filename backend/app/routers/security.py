@@ -82,7 +82,7 @@ async def scan_snippet_security(
 
     # Call LLM for in-depth semantic security audit
     system_prompt = (
-        "You are DevMind AI's Principal Application Security (AppSec) Engineer. "
+        "You are AURON AI's Principal Application Security (AppSec) Engineer. "
         "Audit the provided source code for subtle security vulnerabilities including:\n"
         "- SQL Injection, NoSQL Injection, Command Injection\n"
         "- Cross-Site Scripting (XSS), Insecure Direct Object References (IDOR)\n"
@@ -169,9 +169,12 @@ async def scan_snippet_security(
 async def scan_project_security(
     project_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user)
 ):
-    project = db.query(Project).filter(Project.id == project_id, Project.user_id == current_user.id).first()
+    query = db.query(Project).filter(Project.id == project_id)
+    if current_user:
+        query = query.filter(Project.user_id == current_user.id)
+    project = query.first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
@@ -180,8 +183,17 @@ async def scan_project_security(
 
     aggregated_vulns: List[VulnerabilityItem] = []
     for f in files:
-        if f.content:
-            static_vulns = scan_text_for_security(f.content, f.file_path)
+        content = ""
+        if project.storage_path:
+            full_path = os.path.join(project.storage_path, f.file_path)
+            if os.path.exists(full_path):
+                try:
+                    with open(full_path, "r", encoding="utf-8", errors="ignore") as file_obj:
+                        content = file_obj.read()
+                except Exception:
+                    pass
+        if content:
+            static_vulns = scan_text_for_security(content, f.file_path)
             aggregated_vulns.extend(static_vulns)
 
     # Score calculation

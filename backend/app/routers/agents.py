@@ -47,7 +47,7 @@ async def execute_agent_supervisor_workflow(
 
     # Detailed agent traces for visualizer
     intent = result.get("intent", "general")
-    agent_name = result.get("agent", "DevMind Specialist")
+    agent_name = result.get("agent", "AURON AI Specialist")
     
     traces = [
         {

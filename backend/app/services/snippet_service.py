@@ -1,5 +1,7 @@
 import json
 import re
+import io
+import tokenize
 from typing import List, Dict, Any, Optional
 from app.schemas.snippet import (
     SnippetAnalysisRequest,
@@ -27,6 +29,25 @@ class SnippetService:
                 except Exception:
                     pass
         return None
+
+    def _clean_optimized_code(self, response: str, language: str) -> str:
+        fenced = re.search(r"```[^\n]*\n([\s\S]*?)\n```", response)
+        cleaned = fenced.group(1).strip() if fenced else response.strip()
+
+        if language.lower() == "python":
+            try:
+                tokens = tokenize.generate_tokens(io.StringIO(cleaned).readline)
+                cleaned = tokenize.untokenize(
+                    token for token in tokens if token.type != tokenize.COMMENT
+                ).strip()
+            except (IndentationError, SyntaxError, tokenize.TokenError):
+                cleaned = re.sub(r"(?m)^\s*#.*(?:\n|$)", "", cleaned).strip()
+        else:
+            cleaned = re.sub(r"(?m)^\s*(?://|#|--).*(?:\n|$)", "", cleaned)
+            cleaned = re.sub(r"/\*[\s\S]*?\*/", "", cleaned)
+            cleaned = cleaned.strip()
+
+        return cleaned
 
     async def analyze_snippet(self, payload: SnippetAnalysisRequest) -> SnippetAnalysisResponse:
         action = payload.action.lower().strip()
@@ -57,7 +78,7 @@ class SnippetService:
 
     async def _detect_bugs(self, code: str, language: str) -> SnippetAnalysisResponse:
         system_prompt = (
-            "You are DevMind AI's Senior Code Security & Quality Auditor. "
+            "You are AURON AI's Senior Code Security & Quality Auditor. "
             "Analyze the given source code for logical bugs, syntax errors, edge-case failures, "
             "null/undefined dereferences, off-by-one errors, and memory/resource leaks. "
             "Respond STRICTLY in valid JSON format with the following structure:\n"
@@ -119,7 +140,7 @@ class SnippetService:
 
     async def _fix_code(self, code: str, language: str) -> SnippetAnalysisResponse:
         system_prompt = (
-            "You are DevMind AI's Automated Code Repair Specialist. "
+            "You are AURON AI's Automated Code Repair Specialist. "
             "Analyze the given source code, identify every error, logical defect, or inefficiency, "
             "and generate the complete, production-ready corrected code. "
             "Respond STRICTLY in valid JSON with this exact structure:\n"
@@ -170,7 +191,7 @@ class SnippetService:
 
     async def _explain_code(self, code: str, language: str) -> SnippetAnalysisResponse:
         system_prompt = (
-            "You are DevMind AI's Senior Technical Architect & Code Explainer. "
+            "You are AURON AI's Senior Technical Architect & Code Explainer. "
             "Provide a comprehensive, crystal-clear explanation of the provided code:\n"
             "1. High-Level Architecture & Purpose\n"
             "2. Step-by-Step Execution Flow\n"
@@ -184,21 +205,19 @@ class SnippetService:
 
     async def _optimize_code(self, code: str, language: str) -> SnippetAnalysisResponse:
         system_prompt = (
-            "You are DevMind AI's Performance Engineering Specialist. "
-            "Analyze the given code for algorithmic efficiency, memory consumption, and runtime bottlenecks:\n"
-            "1. Current Time & Space Complexity analysis\n"
-            "2. Performance Bottlenecks identified\n"
-            "3. Optimized Production Code Implementation\n"
-            "4. New Time & Space Complexity with benchmark expectations\n"
-            "Provide the complete optimized code block and explanation in GitHub Markdown."
+            "You are AURON AI's Performance Engineering Specialist. "
+            "Return ONLY the complete optimized source code. "
+            "Do not include Markdown fences, explanations, headings, complexity analysis, "
+            "or comments of any kind. Preserve the requested programming language."
         )
         user_prompt = f"Programming Language: {language}\n\nCode to optimize:\n```{language}\n{code}\n```"
         resp = await llm_provider.generate_completion(system_prompt, user_prompt, temperature=0.2)
-        return SnippetAnalysisResponse(action="optimize", language=language, text_result=resp)
+        optimized_code = self._clean_optimized_code(resp, language)
+        return SnippetAnalysisResponse(action="optimize", language=language, text_result=optimized_code or code)
 
     async def _review_code(self, code: str, language: str) -> SnippetAnalysisResponse:
         system_prompt = (
-            "You are DevMind AI's Lead Staff Engineer performing a thorough Code Review. "
+            "You are AURON AI's Lead Staff Engineer performing a thorough Code Review. "
             "Evaluate:\n"
             "- Overall Code Quality (Score from 0.0 to 10.0)\n"
             "- Readability and Idiomatic Conventions\n"
@@ -228,7 +247,7 @@ class SnippetService:
 
     async def _security_analysis(self, code: str, language: str) -> SnippetAnalysisResponse:
         system_prompt = (
-            "You are DevMind AI's Application Security (AppSec) Expert. "
+            "You are AURON AI's Application Security (AppSec) Expert. "
             "Perform a rigorous security audit of the provided code:\n"
             "- OWASP Top 10 Vulnerabilities (Injection, XSS, SSRF, Deserialization)\n"
             "- Hardcoded Credentials or Secrets Exposure\n"
@@ -242,7 +261,7 @@ class SnippetService:
 
     async def _generate_tests(self, code: str, language: str) -> SnippetAnalysisResponse:
         system_prompt = (
-            "You are DevMind AI's Test Automation Architect. "
+            "You are AURON AI's Test Automation Architect. "
             "Generate a complete, self-contained unit test suite for the provided code:\n"
             "- Use the standard testing framework (pytest for Python, Vitest/Jest for JS/TS, go test for Go)\n"
             "- Include Happy Path tests\n"
@@ -257,7 +276,7 @@ class SnippetService:
 
     async def _generate_docs(self, code: str, language: str) -> SnippetAnalysisResponse:
         system_prompt = (
-            "You are DevMind AI's Principal Technical Documentation Writer. "
+            "You are AURON AI's Principal Technical Documentation Writer. "
             "Generate comprehensive, publication-quality technical documentation for the code:\n"
             "1. Overview & Module Purpose\n"
             "2. API & Function Reference (Parameters, Return Types, Exceptions)\n"
@@ -270,15 +289,57 @@ class SnippetService:
         return SnippetAnalysisResponse(action="generate_docs", language=language, text_result=resp)
 
     async def _generate_code(self, code: str, language: str, prompt: Optional[str]) -> SnippetAnalysisResponse:
-        user_goal = prompt or "Refactor and extend this code with robust production error handling and modularity."
+        user_goal = (prompt or "Generate clean, robust, production-quality code.").strip()
         system_prompt = (
-            "You are DevMind AI's Principal Software Engineer. "
-            f"User Goal: {user_goal}\n"
-            "Generate clean, robust, production-quality code. Include type annotations and docstrings."
+            "You are AURON AI's Principal Software Engineer and Code Generator. "
+            "The user will describe the code they want in natural language. "
+            "Generate complete, robust, production-ready code. Include comments, error handling, and type annotations where applicable. "
+            "Respond STRICTLY in valid JSON with this exact structure:\n"
+            "{\n"
+            '  "generated_code": "<FULL complete source code as a clean string without markdown code ticks>",\n'
+            '  "language": "<detected programming language e.g. python, javascript, typescript, java, cpp, sql, html, go, rust>",\n'
+            '  "explanation": "<Brief 2-3 sentence overview explaining what this code does and how to run it>"\n'
+            "}"
         )
-        user_prompt = f"Programming Language: {language}\n\nExisting Code:\n```{language}\n{code}\n```\n\nInstructions: {user_goal}"
-        resp = await llm_provider.generate_completion(system_prompt, user_prompt, temperature=0.2)
-        return SnippetAnalysisResponse(action="generate_code", language=language, text_result=resp)
+        user_prompt = f"Target Language: {language if language != 'auto' else 'Automatically determine from prompt'}\nUser Prompt / Requirements: {user_goal}\n"
+        if code and code.strip():
+            user_prompt += f"\nExisting Code Context to build upon or replace:\n```{language}\n{code}\n```"
+
+        raw_resp = await llm_provider.generate_completion(system_prompt, user_prompt, temperature=0.2)
+        parsed = self._extract_json_block(raw_resp)
+
+        generated_code = ""
+        detected_lang = language if language and language != "auto" else "python"
+        explanation = "Code successfully generated by AURON AI."
+
+        if parsed and isinstance(parsed, dict) and "generated_code" in parsed:
+            generated_code = str(parsed["generated_code"]).strip()
+            if "language" in parsed and parsed["language"]:
+                detected_lang = str(parsed["language"]).lower().strip()
+            if "explanation" in parsed and parsed["explanation"]:
+                explanation = str(parsed["explanation"]).strip()
+        else:
+            # Fallback regex extraction of code block
+            code_match = re.search(r"```([a-zA-Z]*)\n([\s\S]*?)```", raw_resp)
+            if code_match:
+                if code_match.group(1):
+                    detected_lang = code_match.group(1).lower().strip()
+                generated_code = code_match.group(2).strip()
+                explanation = raw_resp[:code_match.start()].strip() or "Code generated based on your instructions."
+            else:
+                generated_code = raw_resp.strip()
+
+        # Clean accidental markdown backticks
+        if generated_code.startswith("```"):
+            generated_code = re.sub(r"^```[a-zA-Z]*\n?", "", generated_code)
+            generated_code = re.sub(r"\n?```$", "", generated_code).strip()
+
+        return SnippetAnalysisResponse(
+            action="generate_code",
+            language=detected_lang,
+            generated_code=generated_code,
+            explanation=explanation,
+            text_result=explanation
+        )
 
 snippet_service = SnippetService()
-

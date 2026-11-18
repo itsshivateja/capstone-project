@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Cpu, Lock, User as UserIcon, AlertCircle } from 'lucide-react';
+import { Lock, User as UserIcon, AlertCircle } from 'lucide-react';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
-export const Login: React.FC = () => {
+interface LoginProps {
+  embedded?: boolean;
+  onClose?: () => void;
+}
+
+export const Login: React.FC<LoginProps> = ({ embedded = false, onClose }) => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const isLight = false;
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -18,7 +24,7 @@ export const Login: React.FC = () => {
     setSubmitting(true);
     try {
       await login({ username_or_email: usernameOrEmail, password });
-      navigate('/dashboard');
+      navigate('/sandbox');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Invalid username or password');
     } finally {
@@ -26,54 +32,50 @@ export const Login: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-dark-950 flex flex-col justify-center items-center px-4 relative overflow-hidden">
-      {/* Background glow effects */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="w-full max-w-md bg-dark-900 border border-slate-800 rounded-2xl shadow-2xl p-8 relative z-10 backdrop-blur-xl">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-xl shadow-brand-500/25 mb-3">
-            <Cpu className="w-6 h-6" />
+  const form = (
+    <div className={`w-full max-w-sm rounded-[1.75rem] border p-7 shadow-2xl backdrop-blur-2xl ${isLight ? 'border-white/80 bg-white/75 shadow-blue-900/10' : 'border-white/15 bg-[#111522]/75 shadow-black/50'}`}>
+        <div className="flex flex-col items-center mb-6">
+          <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border mb-4 ${isLight ? 'border-blue-200 bg-white/80' : 'border-cyan-300/25 bg-cyan-500/10'}`}>
+            <img src="/auron-logo.png" alt="AURON" className="h-8 w-8 object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Welcome to DevMind AI</h1>
-          <p className="text-xs text-slate-400 mt-1">Sign in to your AI Software Engineering workspace</p>
+          <h1 className={`text-xl font-semibold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>Sign in to AURON</h1>
+          <p className={`mt-1 text-sm ${isLight ? 'text-slate-500' : 'text-white/55'}`}>Your intelligent engineering workspace</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-center gap-2.5 text-rose-400 text-xs">
+          <div className={`mb-4 flex items-center gap-2 rounded-xl border p-3 text-sm ${isLight ? 'border-rose-200 bg-rose-50 text-rose-600' : 'border-rose-400/20 bg-rose-500/10 text-rose-300'}`}>
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">Username or Email</label>
+            <label className={`mb-1.5 block text-sm font-medium ${isLight ? 'text-slate-700' : 'text-white/75'}`}>Username or email</label>
             <div className="relative">
-              <UserIcon className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <UserIcon className={`absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${isLight ? 'text-slate-400' : 'text-white/40'}`} />
               <input
                 type="text"
                 required
                 value={usernameOrEmail}
                 onChange={(e) => setUsernameOrEmail(e.target.value)}
                 placeholder="developer or dev@company.com"
-                className="w-full pl-9 pr-3 py-2 bg-dark-950 border border-slate-800 rounded-lg text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-brand-500 transition"
+                className={`w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none transition ${isLight ? 'border-slate-200 bg-white/80 text-slate-900 placeholder:text-slate-400 focus:border-blue-400' : 'border-white/10 bg-white/[0.06] text-white placeholder:text-white/35 focus:border-blue-300/60'}`}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+            <label className={`mb-1.5 block text-sm font-medium ${isLight ? 'text-slate-700' : 'text-white/75'}`}>Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Lock className={`absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${isLight ? 'text-slate-400' : 'text-white/40'}`} />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2 bg-dark-950 border border-slate-800 rounded-lg text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-brand-500 transition"
+                className={`w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none transition ${isLight ? 'border-slate-200 bg-white/80 text-slate-900 placeholder:text-slate-400 focus:border-blue-400' : 'border-white/10 bg-white/[0.06] text-white placeholder:text-white/35 focus:border-blue-300/60'}`}
               />
             </div>
           </div>
@@ -81,9 +83,9 @@ export const Login: React.FC = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition flex items-center justify-center gap-2 mt-2"
+            className={`mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition disabled:opacity-50 ${isLight ? 'bg-slate-900 text-white hover:bg-blue-700' : 'bg-white text-slate-950 hover:bg-blue-50'}`}
           >
-            {submitting ? <LoadingSpinner size="sm" /> : 'Sign In'}
+            {submitting ? <LoadingSpinner size="sm" /> : 'Sign in'}
           </button>
 
           <button
@@ -92,20 +94,52 @@ export const Login: React.FC = () => {
               setUsernameOrEmail('demo');
               setPassword('devmind123');
             }}
-            className="w-full py-2 px-4 bg-dark-950 hover:bg-slate-800 text-slate-300 border border-slate-700/80 rounded-lg text-xs font-mono transition flex items-center justify-center gap-2"
+            className={`flex w-full items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-mono transition ${isLight ? 'border-slate-200 bg-white/60 text-slate-500 hover:bg-white' : 'border-white/10 bg-white/[0.04] text-white/50 hover:bg-white/[0.09] hover:text-white/80'}`}
           >
-            <span>⚡ Auto-Fill Demo Credentials (demo / devmind123)</span>
+            <span>Auto-fill demo account</span>
           </button>
         </form>
 
-        <div className="mt-6 text-center text-xs text-slate-400">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-brand-400 hover:text-brand-300 font-medium transition">
-            Create one now
-          </Link>
+        <div className={`mt-5 border-t pt-5 text-center ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
+          <p className={`text-sm ${isLight ? 'text-slate-500' : 'text-white/50'}`}>
+            Don't have an account?{' '}
+            <Link to="/register" className={`font-semibold hover:underline ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              Create account
+            </Link>
+          </p>
         </div>
       </div>
+  );
+
+  if (embedded) {
+    return (
+      <div className={`fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-xl ${isLight ? 'bg-slate-900/25' : 'bg-[#02030a]/70'}`}>
+        <button
+          type="button"
+          aria-label="Close sign in"
+          onClick={onClose}
+          className="absolute inset-0 cursor-default"
+        />
+        <div className="relative z-10 w-full max-w-sm">
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className={`absolute right-3 top-3 z-20 text-xl leading-none ${isLight ? 'text-slate-400 hover:text-slate-800' : 'text-white/40 hover:text-white'}`}
+              aria-label="Close sign in"
+            >
+              ×
+            </button>
+          )}
+          {form}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-graphite-bg flex flex-col justify-center items-center px-4 relative">
+      {form}
     </div>
   );
 };
-

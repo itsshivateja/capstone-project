@@ -4,24 +4,604 @@
 
 @layer base {
   body {
-    @apply bg-dark-950 text-slate-100 font-sans antialiased;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: #141415;
+    color: #ededed;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
   }
 
-  /* Custom scrollbars for developer aesthetic */
+  /* Quiet technical scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #090d16;
+    background: #0f0f10;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1e293b;
+    background: #232325;
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: #2e2e32;
   }
 }
 
+@keyframes auron-drift {
+  0%, 100% {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, 3%, 0) scale(1.08);
+  }
+}
+
+@keyframes auron-drift-reverse {
+  0%, 100% {
+    transform: translate3d(4%, 2%, 0) scale(1.06);
+  }
+  50% {
+    transform: translate3d(-5%, -3%, 0) scale(0.96);
+  }
+}
+
+@keyframes auron-grid {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 22px, 0);
+  }
+}
+
+@keyframes auron-orbit {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes auron-orbit-reverse {
+  from {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+
+.auron-orbit-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+}
+
+@keyframes auron-support-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes auron-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes auron-headline-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes auron-orb-breathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.035);
+    filter: brightness(1.12);
+  }
+}
+
+@keyframes auron-sheen {
+  0% {
+    transform: translateX(-130%);
+  }
+  45%, 100% {
+    transform: translateX(130%);
+  }
+}
+
+.auron-bot-turn {
+  perspective: 900px;
+  transform-style: preserve-3d;
+  animation: auron-bot-float 5s ease-in-out infinite;
+}
+
+.auron-bot-body {
+  transform-style: preserve-3d;
+}
+
+.auron-bot-aura {
+  background: rgba(8, 145, 178, 0.16);
+  box-shadow: 0 0 72px 22px rgba(34, 211, 238, 0.1);
+  animation: auron-aura-float 5s ease-in-out infinite;
+}
+
+.auron-bot-eye {
+  transform-origin: center;
+  animation: auron-bot-blink 7s ease-in-out infinite;
+}
+
+.auron-bot-eye-right {
+  animation-delay: 80ms;
+}
+
+@keyframes auron-bot-float {
+  0%, 100% {
+    transform: translateY(0) rotateY(-14deg) rotateX(1deg);
+  }
+  50% {
+    transform: translateY(-9px) rotateY(-14deg) rotateX(1deg);
+  }
+}
+
+@keyframes auron-aura-float {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-9px);
+  }
+}
+
+@keyframes auron-bot-blink {
+  0%, 42%, 46%, 100% {
+    clip-path: inset(0);
+  }
+  44% {
+    clip-path: inset(48% 0);
+  }
+}
+
+.auron-reveal {
+  opacity: 0;
+  animation: auron-reveal 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.auron-reveal-1 { animation-delay: 80ms; }
+.auron-reveal-2 { animation-delay: 180ms; }
+.auron-reveal-3 { animation-delay: 280ms; }
+.auron-reveal-4 { animation-delay: 380ms; }
+.auron-reveal-5 { animation-delay: 480ms; }
+
+.auron-headline-shimmer {
+  background-size: 220% 100%;
+  animation: auron-headline-shimmer 8s ease-in-out infinite;
+}
+
+.auron-orb-breathe {
+  animation: auron-orb-breathe 6s ease-in-out infinite;
+}
+
+.auron-button-sheen {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.auron-button-sheen::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 0;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.48), transparent);
+  content: '';
+  transform: translateX(-130%);
+  animation: auron-sheen 5s ease-in-out infinite;
+}
+
+.auron-support-bot {
+  animation: auron-support-float 4s ease-in-out infinite;
+}
+
+.auron-smooth-page {
+  scroll-behavior: smooth;
+}
+
+.auron-smooth-page a {
+  scroll-behavior: smooth;
+}
+
+.auron-liquid-glass {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.1), transparent 58%),
+    linear-gradient(180deg, rgba(20, 25, 42, 0.3), rgba(7, 8, 9, 0.08));
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    inset 0 -18px 45px rgba(15, 23, 55, 0.12);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+
+.auron-liquid-glass::before {
+  position: absolute;
+  z-index: -1;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.12), transparent 28%, transparent 68%, rgba(96, 165, 250, 0.08));
+  content: '';
+  pointer-events: none;
+}
+
+.auron-liquid-glass::after {
+  position: absolute;
+  z-index: -1;
+  inset: 18% 8%;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.09);
+  filter: blur(42px);
+  content: '';
+  pointer-events: none;
+}
+
+.auron-liquid-glass-light {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.82), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(231, 238, 255, 0.28));
+  box-shadow:
+    0 24px 80px rgba(30, 64, 175, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -18px 45px rgba(147, 197, 253, 0.1);
+}
+
+.auron-liquid-glass-light::before {
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.85), transparent 30%, transparent 68%, rgba(96, 165, 250, 0.12));
+}
+
+.auron-liquid-glass-light::after {
+  background: rgba(96, 165, 250, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auron-animated {
+    animation: none !important;
+  }
+
+  .auron-support-bot {
+    animation: none;
+  }
+
+  .auron-bot-turn,
+  .auron-bot-aura,
+  .auron-bot-eye {
+    animation: none;
+  }
+
+  .auron-smooth-page {
+    scroll-behavior: auto;
+  }
+
+  .auron-reveal,
+  .auron-headline-shimmer,
+  .auron-orb-breathe,
+  .auron-button-sheen {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.auron-workspace {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 75% -20%, rgba(34, 211, 238, 0.10), transparent 34%),
+    #070809;
+}
+
+.auron-workspace::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    radial-gradient(circle at 42% 18%, rgba(14, 165, 233, 0.07), transparent 28%),
+    radial-gradient(circle at 88% 78%, rgba(34, 211, 238, 0.07), transparent 30%);
+  content: '';
+  pointer-events: none;
+}
+
+.auron-workspace .bg-graphite-card {
+  background: linear-gradient(135deg, rgba(20, 25, 42, 0.88), rgba(11, 14, 22, 0.88)) !important;
+  border-color: rgba(147, 197, 253, 0.16) !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+}
+
+.auron-workspace .bg-graphite-deep {
+  background-color: rgba(7, 9, 15, 0.86) !important;
+}
+
+.auron-workspace .bg-graphite-raised {
+  background-color: rgba(42, 52, 82, 0.55) !important;
+}
+
+.auron-workspace .bg-graphite-bg {
+  background-color: transparent !important;
+}
+
+.auron-workspace [class*='border-white'] {
+  border-color: rgba(147, 197, 253, 0.16) !important;
+}
+
+.auron-workspace [class*='bg-white/'] {
+  background-color: rgba(255, 255, 255, 0.045) !important;
+}
+
+.auron-workspace [class*='text-white/'] {
+  color: rgba(226, 232, 240, 0.78) !important;
+}
+
+.auron-workspace .text-graphite-text {
+  color: #e8eefc !important;
+}
+
+.auron-workspace .text-graphite-secondary {
+  color: #aab8d2 !important;
+}
+
+.auron-workspace .text-graphite-muted {
+  color: #8190ad !important;
+}
+
+.auron-workspace button {
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.auron-workspace button:hover:not(:disabled) {
+  box-shadow: 0 0 18px rgba(96, 165, 250, 0.1);
+}
+
+.auron-code-mode button:hover:not(:disabled) {
+  box-shadow: none;
+}
+
+.auron-code-mode {
+  gap: 0.65rem;
+}
+
+.auron-code-mode > .bg-graphite-card,
+.auron-code-mode > .bg-graphite-card > .bg-graphite-card,
+.auron-code-mode > .bg-graphite-card > .bg-graphite-deep {
+  backdrop-filter: blur(18px);
+}
+
+.auron-code-mode > .bg-graphite-card {
+  background:
+    linear-gradient(135deg, rgba(18, 27, 42, 0.94), rgba(8, 15, 25, 0.94)) !important;
+  border-color: rgba(103, 232, 249, 0.14) !important;
+}
+
+.auron-code-mode > .bg-graphite-card:last-child {
+  min-width: 0;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.auron-code-titlebar {
+  min-height: 32px;
+  padding: 0 0.1rem;
+}
+
+.auron-code-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: #67e8f9;
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(103, 232, 249, 0.18);
+}
+
+.auron-code-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+.auron-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #34d399;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
+}
+
+.auron-context-chip {
+  border: 1px solid rgba(147, 197, 253, 0.16);
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 6px;
+  padding: 0.2rem 0.45rem;
+  color: #9fb3d2;
+}
+
+.auron-generator {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.auron-top-panel {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.auron-top-panel.has-comparison {
+  max-height: min(46vh, 430px);
+}
+
+.auron-top-panel > .auron-generator,
+.auron-top-panel > .auron-comparison {
+  min-height: 0;
+  overflow: auto;
+  flex-shrink: 1 !important;
+}
+
+.auron-top-panel > .auron-generator {
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.auron-top-panel > .auron-comparison {
+  flex: 1 1 auto;
+}
+
+.auron-prompt-shell {
+  position: relative;
+  z-index: 1;
+  background-color: rgba(5, 12, 21, 0.76) !important;
+  box-shadow: none;
+}
+
+.auron-prompt-shell textarea {
+  box-sizing: border-box;
+  display: block;
+  height: 38px;
+  min-height: 38px !important;
+  max-height: 38px;
+  padding: 0.05rem 0.1rem;
+  line-height: 1.25rem;
+}
+
+.auron-prompt-shell > div {
+  padding-top: 0.35rem;
+}
+
+.auron-prompt-examples {
+  overflow: visible;
+}
+
+.auron-prompt-examples button {
+  line-height: 1.25rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.auron-comparison {
+  border-color: rgba(147, 197, 253, 0.14) !important;
+  background: rgba(12, 18, 29, 0.96) !important;
+}
+
+.auron-editor-panel,
+.auron-results-panel {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  border-radius: 0.85rem;
+  box-shadow: none !important;
+}
+
+.auron-editor-panel::before,
+.auron-results-panel::before {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.32), transparent);
+  content: '';
+  pointer-events: none;
+}
+
+.auron-panel-header {
+  background: rgba(15, 22, 34, 0.94) !important;
+}
+
+.auron-action-dock {
+  background: rgba(8, 13, 22, 0.94) !important;
+}
+
+.auron-action-dock button {
+  min-height: 32px;
+}
+
+.auron-results-panel > div:first-child {
+  background: radial-gradient(circle at 50% 35%, rgba(34, 211, 238, 0.06), transparent 42%);
+}
+
+.auron-empty-state {
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(34, 211, 238, 0.055), transparent 32%),
+    linear-gradient(180deg, rgba(13, 23, 38, 0.24), transparent 62%);
+}
+
+.auron-empty-icon {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.auron-empty-grid > div {
+  min-height: 66px;
+  background: rgba(5, 12, 22, 0.58) !important;
+  border-color: rgba(147, 197, 253, 0.12) !important;
+  transition: border-color 180ms ease, background-color 180ms ease;
+}
+
+.auron-empty-grid > div:hover {
+  background: rgba(17, 31, 49, 0.72) !important;
+  border-color: rgba(103, 232, 249, 0.28) !important;
+}
+
+@media (max-width: 1023px) {
+  .auron-code-mode {
+    height: calc(100vh - 4.5rem);
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .auron-code-mode > .flex-1 {
+    min-height: 0;
+  }
+
+}
+
+@media (max-width: 639px) {
+  .auron-code-mode {
+    height: auto !important;
+    min-height: calc(100vh - 4.5rem);
+    overflow: visible;
+    padding-bottom: 1rem;
+  }
+
+  .auron-code-mode > .flex-1 {
+    min-height: 620px;
+  }
+
+  .auron-top-panel,
+  .auron-top-panel.has-comparison {
+    max-height: none;
+  }
+}

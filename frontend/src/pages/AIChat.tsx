@@ -7,14 +7,14 @@ import {
   Plus,
   Send,
   User as UserIcon,
-  Cpu,
+  Bot,
   FileCode,
-  Layers,
   ChevronDown,
   ChevronRight,
-  ExternalLink,
+  Terminal,
 } from 'lucide-react';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { MarkdownViewer } from '../components/common/MarkdownViewer';
 import { useNavigate } from 'react-router-dom';
 
 export const AIChat: React.FC = () => {
@@ -29,13 +29,17 @@ export const AIChat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeConv?.messages, sending]);
 
-  // Load conversations when active project changes
   useEffect(() => {
+    const storedPrompt = sessionStorage.getItem('auron_ai_chat_prompt');
+    if (storedPrompt) {
+      setInputMessage(storedPrompt);
+      sessionStorage.removeItem('auron_ai_chat_prompt');
+    }
+
     if (!activeProject) return;
     const loadConversations = async () => {
       setLoadingChats(true);
@@ -45,7 +49,6 @@ export const AIChat: React.FC = () => {
         if (convList.length > 0) {
           setActiveConvId(convList[0].id);
         } else {
-          // Auto create a first conversation
           const newC = await chatService.createConversation(activeProject.id, 'Repository Architecture Discussion');
           setConversations([newC]);
           setActiveConvId(newC.id);
@@ -59,7 +62,6 @@ export const AIChat: React.FC = () => {
     loadConversations();
   }, [activeProject]);
 
-  // Load active conversation details & messages
   useEffect(() => {
     if (!activeProject || !activeConvId) return;
     const loadDetails = async () => {
@@ -92,7 +94,6 @@ export const AIChat: React.FC = () => {
     setInputMessage('');
     setSending(true);
 
-    // Optimistically append user message
     const tempUserMsg: ChatMessage = {
       id: `temp-${Date.now()}`,
       conversation_id: activeConvId,
@@ -101,84 +102,96 @@ export const AIChat: React.FC = () => {
       created_at: new Date().toISOString(),
     };
 
-    setActiveConv((prev) =>
-      prev ? { ...prev, messages: [...(prev.messages || []), tempUserMsg] } : null
-    );
+    if (activeConv) {
+      setActiveConv({
+        ...activeConv,
+        messages: [...(activeConv.messages || []), tempUserMsg],
+      });
+    }
 
     try {
       const assistantMsg = await chatService.sendMessage(activeProject.id, activeConvId, userText);
-      setActiveConv((prev) =>
-        prev
-          ? {
-              ...prev,
-              messages: (prev.messages || []).map((m) => (m.id === tempUserMsg.id ? tempUserMsg : m)).concat(assistantMsg),
-            }
-          : null
-      );
-      // Refresh conversation list to get updated titles
-      const convList = await chatService.getConversations(activeProject.id);
-      setConversations(convList);
-    } catch (err) {
+      setActiveConv((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          messages: [...(prev.messages || []).filter((m) => m.id !== tempUserMsg.id), tempUserMsg, assistantMsg],
+        };
+      });
+    } catch (err: any) {
       console.error('Failed to send message', err);
+      const errorMsg: ChatMessage = {
+        id: `err-${Date.now()}`,
+        conversation_id: activeConvId,
+        role: 'assistant',
+        content: `Error generating response: ${err.response?.data?.detail || err.message || 'Please check your connection.'}`,
+        created_at: new Date().toISOString(),
+      };
+      setActiveConv((prev) => (prev ? { ...prev, messages: [...(prev.messages || []), errorMsg] } : null));
     } finally {
       setSending(false);
     }
   };
 
   const toggleSourceSnippet = (key: string) => {
-    setExpandedSources((prev) => ({ ...prev, [key]: !prev[key] }));
+    setExpandedSources((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   if (!activeProject) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-8">
-        <Layers className="w-12 h-12 text-slate-600 mb-3" />
-        <h2 className="text-base font-semibold text-white">No Repository Selected</h2>
-        <p className="text-xs text-slate-400 mt-1 max-w-sm mb-4">
-          Select or upload an active repository to enable RAG-powered context chat.
+      <div className="h-[calc(100vh-6rem)] flex flex-col items-center justify-center p-6 text-center text-xs text-graphite-muted">
+        <div className="w-10 h-10 rounded-md bg-graphite-card border border-white/[0.08] flex items-center justify-center text-graphite-muted mb-3">
+          <Terminal className="w-5 h-5" />
+        </div>
+        <h2 className="text-sm font-medium text-graphite-text">No active repository</h2>
+        <p className="text-xs text-graphite-muted mt-1 max-w-sm">
+          Select or upload a repository in Project Mode to enable vector-grounded RAG conversations.
         </p>
         <button
           onClick={() => navigate('/projects')}
-          className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition"
+          className="mt-4 px-3 py-1.5 bg-graphite-text hover:bg-white text-graphite-deep rounded-md transition text-xs font-medium"
         >
-          Select Repository
+          Select repository
         </button>
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-7rem)] flex gap-4 overflow-hidden">
-      {/* Left Drawer: Conversations */}
-      <div className="w-72 bg-dark-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden shrink-0">
-        <div className="p-3 border-b border-slate-800 flex items-center justify-between">
-          <span className="text-xs font-semibold text-white">Conversations</span>
+    <div className="h-[calc(100vh-6rem)] flex gap-3 overflow-hidden text-xs text-graphite-text">
+      {/* Left Column: Conversations */}
+      <div className="w-64 bg-graphite-card border border-white/[0.08] rounded-xl flex flex-col overflow-hidden shrink-0">
+        <div className="p-3 border-b border-white/[0.08] flex items-center justify-between">
+          <span className="text-xs font-medium text-graphite-text">Conversations</span>
           <button
             onClick={handleNewChat}
-            className="p-1 rounded bg-brand-600 hover:bg-brand-500 text-white transition flex items-center gap-1 text-[11px] px-2"
+            className="p-1 rounded bg-graphite-raised hover:bg-white/[0.08] text-graphite-secondary hover:text-graphite-text transition flex items-center gap-1 text-[11px] px-2 border border-white/[0.06]"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>New Chat</span>
+            <Plus className="w-3 h-3" />
+            <span>New</span>
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5">
           {loadingChats ? (
             <div className="py-8 flex justify-center">
-              <LoadingSpinner size="sm" label="Loading chats..." />
+              <LoadingSpinner size="sm" label="Loading..." />
             </div>
           ) : (
             conversations.map((c) => (
               <button
                 key={c.id}
                 onClick={() => setActiveConvId(c.id)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg text-xs transition flex items-center gap-2.5 ${
+                className={`w-full text-left px-2.5 py-2 rounded-md text-xs transition flex items-center gap-2 ${
                   activeConvId === c.id
-                    ? 'bg-brand-500/15 text-brand-400 font-semibold border border-brand-500/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                    ? 'bg-graphite-raised text-graphite-text font-medium border border-white/[0.08]'
+                    : 'text-graphite-secondary hover:text-graphite-text hover:bg-graphite-raised/50 border border-transparent'
                 }`}
               >
-                <MessageSquareCode className="w-3.5 h-3.5 shrink-0" />
+                <MessageSquareCode className="w-3.5 h-3.5 shrink-0 text-graphite-muted" />
                 <span className="truncate flex-1">{c.title}</span>
               </button>
             ))
@@ -186,53 +199,57 @@ export const AIChat: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Area: Message Stream & Input */}
-      <div className="flex-1 bg-dark-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden">
+      {/* Right Area: Messages & Input */}
+      <div className="flex-1 bg-graphite-card border border-white/[0.08] rounded-xl flex flex-col overflow-hidden">
         {/* Chat Header */}
-        <div className="h-12 px-5 border-b border-slate-800 flex items-center justify-between bg-dark-950/60 shrink-0">
+        <div className="h-12 px-4 border-b border-white/[0.08] flex items-center justify-between bg-graphite-card shrink-0">
           <div className="flex items-center gap-2 text-xs">
-            <span className="font-semibold text-white truncate">
+            <span className="font-medium text-graphite-text truncate">
               {activeConv?.title || 'Repository Assistant'}
             </span>
-            <span className="text-slate-600">•</span>
-            <span className="text-[11px] font-mono text-brand-400">
-              Qdrant RAG Enabled ({activeProject.name})
+            <span className="text-graphite-muted">•</span>
+            <span className="text-[11px] font-mono text-graphite-muted">
+              RAG Indexed ({activeProject.name})
             </span>
           </div>
         </div>
 
         {/* Message Stream */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {activeConv?.messages && activeConv.messages.length > 0 ? (
             activeConv.messages.map((msg, idx) => {
               const isUser = msg.role === 'user';
               return (
-                <div key={msg.id || idx} className={`flex gap-3.5 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                <div key={msg.id || idx} className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
                   {!isUser && (
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-brand-500/20">
-                      <Cpu className="w-4 h-4" />
+                    <div className="w-7 h-7 rounded-md bg-graphite-raised border border-white/[0.08] flex items-center justify-center text-graphite-secondary shrink-0">
+                      <Bot className="w-3.5 h-3.5" />
                     </div>
                   )}
 
-                  <div className={`max-w-[80%] space-y-2 ${isUser ? 'items-end' : 'items-start'}`}>
+                  <div className={`max-w-[82%] space-y-1.5 ${isUser ? 'items-end' : 'items-start'}`}>
                     <div
-                      className={`p-4 rounded-xl text-xs leading-relaxed whitespace-pre-wrap font-sans ${
+                      className={`p-3.5 rounded-lg text-xs leading-relaxed ${
                         isUser
-                          ? 'bg-brand-600 text-white rounded-tr-none shadow-md'
-                          : 'bg-dark-950 border border-slate-800 text-slate-200 rounded-tl-none'
+                          ? 'bg-graphite-raised border border-white/[0.08] text-graphite-text whitespace-pre-wrap'
+                          : 'bg-graphite-deep border border-white/[0.08] text-graphite-text'
                       }`}
                     >
-                      {msg.content}
+                      {isUser ? (
+                        msg.content
+                      ) : (
+                        <MarkdownViewer content={msg.content} />
+                      )}
                     </div>
 
-                    {/* Source Citations for Assistant */}
+                    {/* Source Citations */}
                     {!isUser && msg.source_references && msg.source_references.length > 0 && (
-                      <div className="space-y-1.5 pt-1">
-                        <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                          <FileCode className="w-3 h-3 text-brand-400" />
-                          <span>Retrieved Source Citations ({msg.source_references.length}):</span>
+                      <div className="space-y-1 pt-0.5">
+                        <p className="text-[10px] font-mono text-graphite-muted flex items-center gap-1">
+                          <FileCode className="w-3 h-3 text-graphite-muted" />
+                          <span>Citations ({msg.source_references.length}):</span>
                         </p>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1">
                           {msg.source_references.map((src, sIdx) => {
                             const sourceKey = `${msg.id || idx}-${sIdx}`;
                             const isSnippetOpen = !!expandedSources[sourceKey];
@@ -240,28 +257,23 @@ export const AIChat: React.FC = () => {
                               <div key={sIdx} className="w-full">
                                 <button
                                   onClick={() => toggleSourceSnippet(sourceKey)}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-mono text-[11px] border border-slate-700/80 transition"
+                                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-graphite-deep hover:bg-graphite-raised text-graphite-secondary font-mono text-[10px] border border-white/[0.06] transition"
                                 >
                                   {isSnippetOpen ? (
-                                    <ChevronDown className="w-3 h-3 text-slate-400" />
+                                    <ChevronDown className="w-3 h-3 text-graphite-muted" />
                                   ) : (
-                                    <ChevronRight className="w-3 h-3 text-slate-400" />
+                                    <ChevronRight className="w-3 h-3 text-graphite-muted" />
                                   )}
-                                  <span className="text-brand-400 font-semibold">{src.file_path}</span>
+                                  <span className="text-graphite-text">{src.file_path}</span>
                                   {src.start_line && src.end_line && (
-                                    <span className="text-slate-500">
+                                    <span className="text-graphite-muted">
                                       :L{src.start_line}-L{src.end_line}
-                                    </span>
-                                  )}
-                                  {src.score && (
-                                    <span className="text-[10px] text-emerald-400/90 ml-1">
-                                      {(src.score * 100).toFixed(0)}% match
                                     </span>
                                   )}
                                 </button>
 
                                 {isSnippetOpen && src.snippet && (
-                                  <div className="mt-1 p-2.5 bg-dark-950 border border-slate-800/90 rounded-md font-mono text-[11px] text-slate-300 overflow-x-auto whitespace-pre">
+                                  <div className="mt-1 p-2 bg-graphite-deep border border-white/[0.06] rounded font-mono text-[10px] text-graphite-secondary overflow-x-auto whitespace-pre">
                                     {src.snippet}
                                   </div>
                                 )}
@@ -272,56 +284,46 @@ export const AIChat: React.FC = () => {
                       </div>
                     )}
                   </div>
-
-                  {isUser && (
-                    <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0">
-                      <UserIcon className="w-4 h-4" />
-                    </div>
-                  )}
                 </div>
               );
             })
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500">
-              <MessageSquareCode className="w-10 h-10 text-slate-700 mb-2" />
-              <p className="text-xs font-medium text-slate-300">Repository RAG Ready</p>
-              <p className="text-[11px] text-slate-500 mt-1 max-w-sm">
-                Ask questions about your codebase, functions, architecture, or find where features are implemented.
+            <div className="h-full flex flex-col items-center justify-center text-center text-graphite-muted py-12">
+              <MessageSquareCode className="w-8 h-8 text-graphite-muted mb-2" />
+              <p className="font-medium text-graphite-text">Empty session</p>
+              <p className="text-[11px] text-graphite-muted mt-1 max-w-xs">
+                Ask architectural questions, locate implementation details, or request code modifications.
               </p>
             </div>
           )}
 
           {sending && (
-            <div className="flex gap-3.5 items-start">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-brand-500/20">
-                <Cpu className="w-4 h-4" />
-              </div>
-              <div className="p-3.5 bg-dark-950 border border-slate-800 rounded-xl rounded-tl-none">
-                <LoadingSpinner size="sm" label="Searching repository vector index..." />
-              </div>
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-graphite-deep border border-white/[0.08] text-graphite-muted">
+              <LoadingSpinner size="sm" />
+              <span>Querying vector store & inference engine...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Chat Input Bar */}
-        <div className="p-4 border-t border-slate-800 bg-dark-950/60 shrink-0">
+        {/* Input Bar */}
+        <div className="p-3 border-t border-white/[0.08] bg-graphite-card">
           <form onSubmit={handleSendMessage} className="flex gap-2">
             <input
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder={`Ask about ${activeProject.name} (e.g. 'Where is authentication handled?' or 'Explain the database models')...`}
+              placeholder="Ask a question about the active repository..."
               disabled={sending}
-              className="flex-1 px-4 py-2.5 bg-dark-900 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-brand-500 transition"
+              className="flex-1 bg-graphite-deep border border-white/[0.08] rounded-md px-3 py-2 text-xs text-graphite-text placeholder:text-graphite-muted focus:outline-none focus:border-white/[0.2] transition font-sans"
             />
             <button
               type="submit"
               disabled={!inputMessage.trim() || sending}
-              className="px-4 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-lg shadow-brand-500/20 transition flex items-center gap-1.5"
+              className="px-4 py-2 bg-graphite-text hover:bg-white text-graphite-deep font-medium rounded-md transition text-xs disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center gap-1.5 shrink-0"
             >
-              <Send className="w-3.5 h-3.5" />
               <span>Send</span>
+              <Send className="w-3.5 h-3.5" />
             </button>
           </form>
         </div>

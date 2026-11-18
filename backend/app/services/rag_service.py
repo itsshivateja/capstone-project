@@ -1,3 +1,4 @@
+import re
 from typing import List, Dict, Any, Tuple
 from sqlalchemy.orm import Session
 from app.models.project import Project
@@ -5,20 +6,62 @@ from app.models.conversation import Conversation, Message
 from app.services.vector_store import vector_store
 from app.services.llm_provider import llm_provider
 
-RAG_SYSTEM_PROMPT = """You are DevMind AI, an elite AI Software Engineering Assistant.
+RAG_SYSTEM_PROMPT = """You are AURON AI, an elite AI Software Engineering Assistant.
 You have deep expertise in codebase analysis, debugging, architecture, refactoring, and code explanation.
 
 You are answering a developer's question using ACTUAL retrieved code context from their repository.
 
-STRICT GUIDELINES:
-1. Always base your response on the provided CODE CONTEXT snippets.
-2. Provide precise file paths and line number references whenever available.
-3. If the retrieved context is insufficient or the requested feature does not exist in the repository, clearly state that the repository does not contain enough information rather than hallucinating details.
-4. Format code blocks using appropriate markdown backticks with language tags.
-5. Provide actionable, concise, and production-quality explanations.
+STRICT OPERATIONAL DIRECTIVES:
+1. ANSWER ONLY WHAT IS ASKED:
+   - Stay strictly focused on the developer's exact prompt. Do NOT generate unrequested extras.
+   - When asked "what are bugs" or to "find bugs" or identify errors:
+     * List ONLY the identified bugs, defects, and syntax/runtime errors.
+     * DO NOT generate unsolicited full-code rewrites or entire rewritten functions (e.g., "### Minimal robust rewrite").
+     * DO NOT generate unsolicited test suites or "what to test next" sections unless the user explicitly asked for tests.
+     * DO NOT generate conversational filler, boilerplate summaries, or concluding essays ("By addressing...", "In summary...", "I hope this helps...").
+2. CONCISE, HIGH-READABILITY FORMATTING:
+   - NEVER use wide multi-column Markdown tables (e.g. `| Line | Problem | Why it matters | Suggested fix |`). Tables break and wrap awkwardly in sidebars and narrow chats.
+   - Instead, format each bug as a clean, structured block:
+     ### 🐛 [Severity: Critical/High/Medium/Low] Bug Name
+     - **File & Line**: `file_name.py:L14`
+     - **Problem**: 1-2 sentence description of the bug.
+     - **Root Cause**: Why it happens under specific inputs.
+     - **Recommended Fix**: 1-2 lines showing the exact corrected code.
+3. PRECISE REPOSITORY CONTEXT:
+   - Always cite exact file paths and line numbers from the provided CODE CONTEXT snippets.
+   - If the code has no bugs, state clearly and concisely that no bugs were identified.
+4. CODE SNIPPETS:
+   - When providing code snippets, include only the necessary lines inside markdown code fences with the language tag. Keep them minimal and focused.
 """
 
 class RAGService:
+    def _clean_unsolicited_bug_extras(self, text: str, user_query: str) -> str:
+        """
+        If the user strictly asked for bugs/errors, strip out any hallucinated
+        unsolicited full function rewrites, test suites, or closing boilerplate.
+        """
+        is_bug_query = bool(re.search(r'\b(bug|error|flaw|issue|defect|vulnerability|problem)\b', user_query, re.IGNORECASE))
+        wants_rewrite = bool(re.search(r'\b(rewrite|refactor|fix|correct|replace|solution code)\b', user_query, re.IGNORECASE))
+        wants_tests = bool(re.search(r'\b(test|unit test|edge case|coverage)\b', user_query, re.IGNORECASE))
+
+        cleaned = text
+
+        if is_bug_query and not wants_rewrite:
+            # Strip unsolicited full rewrite sections
+            cleaned = re.sub(r'###\s*(?:Minimal\s+)?(?:robust\s+)?(?:code\s+)?rewrite[\s\S]*?(?=(?:###|$))', '', cleaned, flags=re.IGNORECASE)
+
+        if is_bug_query and not wants_tests:
+            # Strip unsolicited "what to test next" sections
+            cleaned = re.sub(r'###\s*What to test(?: next)?[\s\S]*?(?=(?:###|$))', '', cleaned, flags=re.IGNORECASE)
+
+        if is_bug_query:
+            # Strip trailing conversational boilerplate
+            cleaned = re.sub(r'By addressing the [`\'\w\s/-]+(?:risks|errors|defects)[\s\S]*$', '', cleaned, flags=re.IGNORECASE)
+            cleaned = re.sub(r'In summary,[\s\S]*$', '', cleaned, flags=re.IGNORECASE)
+            cleaned = re.sub(r'I hope this helps[\s\S]*$', '', cleaned, flags=re.IGNORECASE)
+
+        return cleaned.strip()
+
     async def chat_with_repo(
         self,
         db: Session,
@@ -72,19 +115,39 @@ class RAGService:
         for m in recent_messages:
             history_text += f"{m.role.upper()}: {m.content}\n"
 
+        # Check for bug identification query
+        is_bug_query = bool(re.search(r'\b(bug|error|flaw|issue|defect|vulnerability|problem)\b', user_message_content, re.IGNORECASE))
+        has_active_context_file = "[Context File:" in user_message_content
+
+        guidance = "Provide a context-aware answer citing the relevant files and lines."
+        if has_active_context_file:
+            guidance += " NOTE: The user has provided active editor code under `[Context File: ...]`. Focus your answer primarily on analyzing this active code."
+        if is_bug_query:
+            guidance += (
+                " IMPORTANT: The user is specifically asking about bugs/errors. "
+                "List ONLY the identified bugs with their file, line number, severity, root cause, and concise 1-2 line fix. "
+                "DO NOT output multi-column markdown tables. DO NOT write full-code rewrites. "
+                "DO NOT write 'what to test next' or test cases. DO NOT write conversational conclusions."
+            )
+
         prompt_payload = (
             f"{context_str}\n\n"
             f"### CONVERSATION HISTORY:\n{history_text}\n"
             f"USER QUERY:\n{user_message_content}\n\n"
-            f"Provide a context-aware answer citing the relevant files and lines:"
+            f"{guidance}"
         )
 
         # Call LLM
-        answer = await llm_provider.generate_completion(
+        raw_answer = await llm_provider.generate_completion(
             system_prompt=RAG_SYSTEM_PROMPT,
             user_prompt=prompt_payload,
             temperature=0.2
         )
+
+        # Clean unsolicited extras if user only asked for bugs
+        answer = self._clean_unsolicited_bug_extras(raw_answer, user_message_content)
+        if not answer:
+            answer = raw_answer
 
         # Persist User Message
         user_msg = Message(

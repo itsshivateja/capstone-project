@@ -2,7 +2,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal
+from app.services.auth_service import ensure_demo_user
 import app.models  # Ensure all models are registered
 
 # Ensure tables exist immediately
@@ -30,13 +31,15 @@ from app.routers import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
-    print(f"[DevMind AI] System initialized with database: {settings.DATABASE_URL}")
+    with SessionLocal() as db:
+        ensure_demo_user(db)
+    print(f"[AURON AI] System initialized with database: {settings.DATABASE_URL}")
     yield
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="DevMind AI – AI-Powered Software Engineering Assistant API",
+    description="AURON AI – AI-Powered Software Engineering Assistant API",
     lifespan=lifespan
 )
 

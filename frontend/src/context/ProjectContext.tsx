@@ -29,18 +29,18 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const data = await projectService.getProjects();
       setProjects(data);
 
-      const savedProjectId = localStorage.getItem('devmind_active_project_id');
+      const savedProjectId = localStorage.getItem('auron_ai_active_project_id');
       if (savedProjectId) {
         const found = data.find((p) => p.id === savedProjectId);
         if (found) {
           setActiveProjectState(found);
         } else if (data.length > 0) {
           setActiveProjectState(data[0]);
-          localStorage.setItem('devmind_active_project_id', data[0].id);
+          localStorage.setItem('auron_ai_active_project_id', data[0].id);
         }
       } else if (data.length > 0) {
         setActiveProjectState(data[0]);
-        localStorage.setItem('devmind_active_project_id', data[0].id);
+        localStorage.setItem('auron_ai_active_project_id', data[0].id);
       }
     } catch (err) {
       console.error('Failed to load projects:', err);
@@ -61,9 +61,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const setActiveProject = (project: Project | null) => {
     setActiveProjectState(project);
     if (project) {
-      localStorage.setItem('devmind_active_project_id', project.id);
+      localStorage.setItem('auron_ai_active_project_id', project.id);
     } else {
-      localStorage.removeItem('devmind_active_project_id');
+      localStorage.removeItem('auron_ai_active_project_id');
     }
   };
 

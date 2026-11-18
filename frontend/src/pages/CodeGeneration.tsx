@@ -227,7 +227,7 @@ export const CodeGeneration: React.FC = () => {
               <Sparkles className="w-10 h-10 text-slate-700 mb-2" />
               <p className="font-medium text-slate-300">Ready to Generate Features</p>
               <p className="text-slate-500 mt-1 max-w-sm">
-                Describe the feature, API endpoint, or refactor you need. DevMind will use your repository context to create compatible code with a live diff view.
+                Describe the feature, API endpoint, or refactor you need. AURON AI will use your repository context to create compatible code with a live diff view.
               </p>
             </div>
           )}

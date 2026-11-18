@@ -3,10 +3,10 @@ from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEFAULT_DB_PATH = os.path.join(BASE_DIR, "devmind.db")
+DEFAULT_DB_PATH = os.path.join(BASE_DIR, "auron_ai.db")
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "DevMind AI"
+    PROJECT_NAME: str = "AURON AI"
     VERSION: str = "1.0.0"
     API_V1_PREFIX: str = "/api/v1"
     

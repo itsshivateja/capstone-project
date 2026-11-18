@@ -1,5 +1,5 @@
 import api from './api';
-import { Project, TreeNode, ProjectFileDetail } from '../types';
+import { Project, TreeNode, ProjectFileDetail, RepositoryHealthScoreResponse } from '../types';
 
 export const projectService = {
   async getProjects(): Promise<Project[]> {
@@ -30,6 +30,24 @@ export const projectService = {
       },
       onUploadProgress,
     });
+    return res.data;
+  },
+
+  async importGithub(projectId: string, githubUrl: string, githubToken?: string): Promise<Project> {
+    const res = await api.post<Project>(`/projects/${projectId}/import-github`, {
+      github_url: githubUrl,
+      github_token: githubToken || undefined,
+    });
+    return res.data;
+  },
+
+  async createSampleDemo(): Promise<Project> {
+    const res = await api.post<Project>('/projects/sample-demo');
+    return res.data;
+  },
+
+  async getHealthScore(projectId: string): Promise<RepositoryHealthScoreResponse> {
+    const res = await api.get<RepositoryHealthScoreResponse>(`/projects/${projectId}/health-score`);
     return res.data;
   },
 

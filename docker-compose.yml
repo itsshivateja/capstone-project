@@ -1,10 +1,7 @@
-version: '3.8'
-
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: devmind_postgres
+    container_name: auron_ai_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: devmind_user
@@ -20,10 +17,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # Qdrant Vector Database
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: devmind_qdrant
+    container_name: auron_ai_qdrant
     restart: unless-stopped
     ports:
       - "6333:6333"
@@ -31,17 +27,16 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
 
-  # DevMind FastAPI Backend
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: devmind_backend
+    container_name: auron_ai_backend
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://devmind_user:devmind_password@postgres:5432/devmind_db
+      DATABASE_URL: postgresql+psycopg2://devmind_user:devmind_password@postgres:5432/devmind_db
       QDRANT_URL: http://qdrant:6333
       SECRET_KEY: devmind-super-secure-production-jwt-key
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
@@ -55,12 +50,11 @@ services:
     volumes:
       - backend_uploads:/app/uploads
 
-  # DevMind React Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: devmind_frontend
+    container_name: auron_ai_frontend
     restart: unless-stopped
     ports:
       - "3000:80"
@@ -71,4 +65,3 @@ volumes:
   postgres_data:
   qdrant_data:
   backend_uploads:
-

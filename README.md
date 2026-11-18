@@ -1,13 +1,13 @@
-# DevMind AI – AI-Powered Software Engineering Assistant
+# AURON AI – AI-Powered Software Engineering Assistant
 
-![DevMind AI Architecture](https://img.shields.io/badge/Architecture-RAG%20%2B%20AST%20%2B%20FastAPI%20%2B%20React-blue)
+![AURON AI Architecture](https://img.shields.io/badge/Architecture-RAG%20%2B%20AST%20%2B%20FastAPI%20%2B%20React-blue)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-green)
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-teal)
 ![React](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite%20%2B%20TS-cyan)
 ![Vector DB](https://img.shields.io/badge/Vector%20DB-Qdrant-red)
 ![License](https://img.shields.io/badge/License-MIT-purple)
 
-**DevMind AI** is a production-quality, full-stack AI software engineering assistant designed to ingest, parse, vector-index, and reason over complete software repositories. Inspired by professional developer environments like Cursor AI and GitHub Copilot, DevMind AI pairs an AST-aware code intelligence engine with a Qdrant-backed RAG pipeline to provide context-aware chat, automated vulnerability detection, live Monaco code generation & diffing, multi-dimensional code reviews, automated unit test generation, and technical documentation synthesis.
+**AURON AI** is a production-quality, full-stack AI software engineering assistant designed to ingest, parse, vector-index, and reason over complete software repositories. Inspired by professional developer environments like Cursor AI and GitHub Copilot, AURON AI pairs an AST-aware code intelligence engine with a Qdrant-backed RAG pipeline to provide context-aware chat, automated vulnerability detection, live Monaco code generation & diffing, multi-dimensional code reviews, automated unit test generation, and technical documentation synthesis.
 
 ---
 

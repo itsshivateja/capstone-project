@@ -1,43 +1,37 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProjectProvider } from './context/ProjectContext';
 import { AppLayout } from './components/layout/AppLayout';
-import { Login } from './pages/Login';
 import { Register } from './pages/Register';
-import { Dashboard } from './pages/Dashboard';
+import { Welcome } from './pages/Welcome';
 import { Projects } from './pages/Projects';
-import { RepoExplorer } from './pages/RepoExplorer';
-import { AIChat } from './pages/AIChat';
-import { AIAgents } from './pages/AIAgents';
-import { BugDetection } from './pages/BugDetection';
-import { CodeGeneration } from './pages/CodeGeneration';
-import { CodeReview } from './pages/CodeReview';
-import { TestGeneration } from './pages/TestGeneration';
-import { Documentation } from './pages/Documentation';
-import { Settings } from './pages/Settings';
 import { CodeSandbox } from './pages/CodeSandbox';
-import { CodeRefactoring } from './pages/CodeRefactoring';
-import { SecurityAnalysis } from './pages/SecurityAnalysis';
-import { ActivityHistory } from './pages/ActivityHistory';
+import { AIChat } from './pages/AIChat';
+import { Settings } from './pages/Settings';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const RootRoute: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const { pathname } = useLocation();
 
   if (isLoading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-dark-950">
+      <div className="h-screen w-screen flex items-center justify-center bg-graphite-bg">
         <LoadingSpinner size="lg" label="Authenticating session..." />
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return pathname === '/' || pathname === '/welcome' ? <Welcome /> : <Navigate to="/" replace />;
   }
 
-  return <>{children}</>;
+  if (pathname === '/' || pathname === '/welcome') {
+    return <Navigate to="/sandbox" replace />;
+  }
+
+  return <AppLayout />;
 };
 
 const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -45,14 +39,14 @@ const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   if (isLoading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-dark-950">
+      <div className="h-screen w-screen flex items-center justify-center bg-graphite-bg">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -64,15 +58,8 @@ export const App: React.FC = () => {
       <AuthProvider>
         <ProjectProvider>
           <Routes>
-            {/* Public Routes */}
-            <Route
-              path="/login"
-              element={
-                <PublicOnlyRoute>
-                  <Login />
-                </PublicOnlyRoute>
-              }
-            />
+            {/* Public Auth Routes */}
+            <Route path="/login" element={<Navigate to="/" replace />} />
             <Route
               path="/register"
               element={
@@ -82,35 +69,43 @@ export const App: React.FC = () => {
               }
             />
 
-            {/* Protected Workspace Routes */}
+            {/* Protected Workspace Layout */}
             <Route
               path="/"
               element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
+                <RootRoute />
               }
             >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
+              {/* AURON AI Starting Welcome Page */}
+              <Route index element={<Welcome />} />
+              <Route path="welcome" element={<Welcome />} />
+              <Route path="dashboard" element={<Navigate to="/" replace />} />
+
+              {/* Core Workflows */}
               <Route path="projects" element={<Projects />} />
               <Route path="sandbox" element={<CodeSandbox />} />
               <Route path="chat" element={<AIChat />} />
-              <Route path="explorer" element={<RepoExplorer />} />
-              <Route path="bugs" element={<BugDetection />} />
-              <Route path="codegen" element={<CodeGeneration />} />
-              <Route path="review" element={<CodeReview />} />
-              <Route path="refactor" element={<CodeRefactoring />} />
-              <Route path="tests" element={<TestGeneration />} />
-              <Route path="security" element={<SecurityAnalysis />} />
-              <Route path="docs" element={<Documentation />} />
-              <Route path="agents" element={<AIAgents />} />
-              <Route path="history" element={<ActivityHistory />} />
+              <Route path="agents" element={<Navigate to="/" replace />} />
+
+              {/* Settings & Configuration */}
               <Route path="settings" element={<Settings />} />
+
+              {/* Compatibility Aliases & Clean Consolidation Redirects */}
+              <Route path="project" element={<Navigate to="/projects" replace />} />
+              <Route path="code" element={<Navigate to="/sandbox" replace />} />
+              <Route path="explorer" element={<Navigate to="/projects?tab=explorer" replace />} />
+              <Route path="bugs" element={<Navigate to="/projects?tab=health" replace />} />
+              <Route path="security" element={<Navigate to="/projects?tab=health" replace />} />
+              <Route path="review" element={<Navigate to="/sandbox" replace />} />
+              <Route path="codegen" element={<Navigate to="/sandbox" replace />} />
+              <Route path="refactor" element={<Navigate to="/sandbox" replace />} />
+              <Route path="tests" element={<Navigate to="/sandbox" replace />} />
+              <Route path="docs" element={<Navigate to="/projects?tab=health" replace />} />
+              <Route path="history" element={<Navigate to="/projects" replace />} />
             </Route>
 
-            {/* Catch-all redirect */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {/* Catch-all redirect to starting page */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ProjectProvider>
       </AuthProvider>
@@ -119,4 +114,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-

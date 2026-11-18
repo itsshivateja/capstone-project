@@ -8,6 +8,7 @@ class ProjectCreate(BaseModel):
 
 class GitHubImportRequest(BaseModel):
     github_url: str = Field(..., description="e.g. https://github.com/fastapi/fastapi")
+    github_token: Optional[str] = Field(default=None, description="Optional GitHub Personal Access Token for private repositories or higher rate limits")
 
 class ProjectResponse(BaseModel):
     id: str

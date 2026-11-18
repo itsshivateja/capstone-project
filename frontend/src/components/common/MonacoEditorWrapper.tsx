@@ -40,7 +40,7 @@ export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({
 
   if (originalValue !== undefined) {
     return (
-      <div className="w-full h-full border border-slate-800 rounded-lg overflow-hidden bg-[#1e1e1e]">
+      <div className="w-full h-full border border-white/[0.08] rounded-md overflow-hidden bg-[#141415]">
         <DiffEditor
           height={height}
           language={monacoLang}
@@ -62,7 +62,7 @@ export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({
   }
 
   return (
-    <div className="w-full h-full border border-slate-800 rounded-lg overflow-hidden bg-[#1e1e1e]">
+    <div className="w-full h-full border border-white/[0.08] rounded-md overflow-hidden bg-[#141415]">
       <Editor
         height={height}
         language={monacoLang}
